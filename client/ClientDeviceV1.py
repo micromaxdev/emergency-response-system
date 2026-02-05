@@ -1,4 +1,4 @@
-# Pico W - Combined Emergency Script (MPU6050 MATCHED TO TABLE SCRIPT)
+# Pico W - Combined Emergency Script
 # Mass: 5 rapid presses -> MASS emergency
 # Personal: hold 5s -> PERSONAL emergency
 # Fall detection (MPU6050) -> PERSONAL emergency (WITH 10s CANCEL WINDOW)
@@ -518,4 +518,5 @@ while True:
 
     prev_pressed = pressed
     time.sleep_ms(CHECK_MS)
+
 
