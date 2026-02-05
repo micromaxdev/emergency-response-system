@@ -2,12 +2,7 @@
 # Mass: 5 rapid presses -> MASS emergency
 # Personal: hold 5s -> PERSONAL emergency
 # Fall detection (MPU6050) -> PERSONAL emergency (WITH 10s CANCEL WINDOW)
-#
-# CHANGE REQUEST APPLIED:
-# - Do NOT use LED for either button emergency (mass/personal).
-# - When a fall is triggered: turn LED ON and start a 10s waiting period.
 #   During the 10s: if the button is pressed once, cancel the fall (do not send).
-#   LED is only used for fall pending alert (and is OFF otherwise).
 
 import time, math, _thread
 from machine import Pin, I2C
@@ -51,14 +46,13 @@ CHECK_MS = 50
 PERSONAL_COOLDOWN_MS = 1200
 
 # ---------------- Fall detection thresholds ----------------
-# These thresholds assume your table script's scaling (±8g accel, DLPF ~42Hz)
 FALL_THRESHOLD_LOW  = 0.4   # g
 FALL_THRESHOLD_HIGH = 3.5   # g
 FALL_MIN_DURATION   = 100   # ms
 FALL_MAX_DURATION   = 1500  # ms
 FALL_COOLDOWN_MS    = 10000 # ms (prevents repeat fall spamming)
 
-# Fall cancel window (NEW)
+# Fall cancel window
 FALL_CANCEL_WINDOW_MS = 10_000  # 10 seconds to cancel by single press
 
 # ---------------- Network behavior ----------------
@@ -67,7 +61,7 @@ SOCKET_TIMEOUT_S = 2
 
 # ---------------- Hardware ----------------
 led = Pin("LED", Pin.OUT)
-led.off()  # LED ONLY used for fall pending alert
+led.off() 
 
 # ---------------- Wi-Fi + Send ----------------
 def wifi_connect(timeout_ms=WIFI_CONNECT_TIMEOUT_MS):
@@ -142,7 +136,7 @@ fall_detected_at_ms = 0
 
 data_lock = _thread.allocate_lock()
 
-# ---------------- MPU6050 (MATCHED TO TABLE SCRIPT) ----------------
+# ---------------- MPU6050----------------
 MPU_ADDR = 0x68
 
 # Registers
@@ -153,7 +147,6 @@ GYRO_CONFIG  = 0x1B
 ACCEL_CONFIG = 0x1C
 ACCEL_XOUT_H = 0x3B
 
-# EXACT same settings as your table streaming code:
 ACCEL_RANGE_REGVAL = 0x10  # ±8g
 GYRO_RANGE_REGVAL  = 0x08  # ±500 dps
 DLPF_CFG_REGVAL    = 0x03  # ~42 Hz
@@ -329,7 +322,7 @@ fall_send_cooldown_until = 0
 # ---------------- Fall pending (NEW) ----------------
 fall_pending = False
 fall_pending_start_ms = 0
-fall_pending_extra = None  # cached payload extras for when we actually send
+fall_pending_extra = None 
 
 def start_fall_pending(extra: dict, start_ms: int):
     global fall_pending, fall_pending_start_ms, fall_pending_extra
@@ -434,7 +427,6 @@ while True:
         start_fall_pending(extra, now)
 
     # ---- MASS logic: count rapid presses (rising edges)
-    # NOTE: No LED usage here (per requirement).
     if time.ticks_diff(now, mass_cooldown_until) >= 0:
         if rising_edge:
             # debounce
@@ -479,7 +471,6 @@ while True:
                     continue
 
     # ---- PERSONAL logic: hold for 5 seconds
-    # NOTE: No LED usage here (per requirement).
     if time.ticks_diff(now, personal_cooldown_until) >= 0:
         if pressed:
             if press_start is None:
@@ -527,3 +518,4 @@ while True:
 
     prev_pressed = pressed
     time.sleep_ms(CHECK_MS)
+
