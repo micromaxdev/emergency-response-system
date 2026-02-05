@@ -11,10 +11,10 @@ import socket
 import ujson
 
 # ---------------- User config ----------------
-WIFI_SSID = "Thomas's iPhone"
-WIFI_PASS = "12345678"
+WIFI_SSID = "add wifi ssid"
+WIFI_PASS = "add wifi pass"
 
-PI5_IP   = "172.20.10.2"
+PI5_IP   = "add pi5 IP"
 PI5_PORT = 8080
 
 DEVICE_ID = "PICO_TEST_01"
@@ -518,5 +518,6 @@ while True:
 
     prev_pressed = pressed
     time.sleep_ms(CHECK_MS)
+
 
 
