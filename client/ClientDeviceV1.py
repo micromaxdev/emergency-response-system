@@ -3,6 +3,7 @@
 # Personal: hold 5s -> PERSONAL emergency
 # Fall detection (MPU6050) -> PERSONAL emergency (WITH 10s CANCEL WINDOW)
 #   During the 10s: if the button is pressed once, cancel the fall (do not send).
+#test
 
 import time, math, _thread
 from machine import Pin, I2C
