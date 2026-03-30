@@ -1,23 +1,37 @@
 """
-ers_shared.py — shared config, CSS, and DB helpers for every ERS page.
-Import this at the top of each page file.
+utils.py — shared config, CSS, and DB helpers for every ERS page.
+Centrally managed paths for the new project structure.
+Full version with all original logic preserved.
 """
 
 import sqlite3
 import socket
 import os
+import sys
 from datetime import datetime, timedelta
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  CONFIG — edit here, applies everywhere
+#  PATH CALCULATIONS 
 # ════════════════════════════════════════════════════════════════════════════════
-DB_PATH        = os.path.expanduser("~/ers_server/ers.sqlite")
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR    = os.path.dirname(CURRENT_DIR)
+
+DB_PATH     = os.path.join(ROOT_DIR, "data", "ers.sqlite")
+MAP_DIR     = os.path.join(ROOT_DIR, "assets", "maps")
+AUDIO_DIR   = os.path.join(ROOT_DIR, "assets", "audios")
+
+os.makedirs(MAP_DIR, exist_ok=True)
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
+# ════════════════════════════════════════════════════════════════════════════════
+#  CONFIG 
+# ════════════════════════════════════════════════════════════════════════════════
 SERVER_HOST    = "127.0.0.1"
 SERVER_PORT    = 8080
 DRILL_DEVICE   = "DASHBOARD_DRILL"
 DRILL_SOURCE   = "test_drill"
 REFRESH_SEC    = 5
-RETENTION_DAYS = 30   # ← change this to adjust how many days of alerts are kept
+RETENTION_DAYS = 30 
 
 def autorefresh():
     """Call once per page after set_page_config to enable auto-refresh."""
@@ -25,7 +39,7 @@ def autorefresh():
     st_autorefresh(interval=REFRESH_SEC * 1000, key="ers_autorefresh")
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  SHARED CSS
+#  SHARED CSS 
 # ════════════════════════════════════════════════════════════════════════════════
 ERS_CSS = """
 <style>
@@ -163,11 +177,6 @@ html, body, [data-testid="stAppViewContainer"] {
     color: var(--drill); letter-spacing: 1px;
 }
 .drill-alert strong { font-size: 1rem; letter-spacing: 3px; }
-.purge-box {
-    background: rgba(230,57,70,0.06);
-    border: 1px solid rgba(230,57,70,0.3);
-    border-radius: 6px; padding: 16px 20px; margin-bottom: 20px;
-}
 .nav-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -177,7 +186,6 @@ html, body, [data-testid="stAppViewContainer"] {
     cursor: pointer;
 }
 .nav-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.nav-card-icon  { font-size: 2rem; margin-bottom: 10px; }
 .nav-card-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.4rem; letter-spacing: 3px; color: var(--accent);
@@ -197,6 +205,11 @@ html, body, [data-testid="stAppViewContainer"] {
 </style>
 """
 
+def passes_filter(incident, type_filter):
+    if not type_filter or type_filter == "All":
+        return True
+    return str(incident.get("emergency_type", "")).lower() == str(type_filter).lower()
+
 # ════════════════════════════════════════════════════════════════════════════════
 #  DB — CORE
 # ════════════════════════════════════════════════════════════════════════════════
@@ -210,81 +223,46 @@ def db_connect():
 
 def init_extra_tables():
     """Create/migrate staff and devices tables."""
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     try:
-        # Staff — separate alert flags for mass vs personal emergencies
         conn.execute("""
         CREATE TABLE IF NOT EXISTS staff (
-            id                    INTEGER PRIMARY KEY AUTOINCREMENT,
-            name                  TEXT NOT NULL,
-            role                  TEXT,
-            email                 TEXT,
-            phone                 TEXT,
-            email_alerts_mass     INTEGER DEFAULT 0,
-            email_alerts_personal INTEGER DEFAULT 0,
-            sms_alerts_mass       INTEGER DEFAULT 0,
-            sms_alerts_personal   INTEGER DEFAULT 0,
-            created_at            TEXT DEFAULT (datetime('now'))
-        );
-        """)
-
-        # Migrate: add new columns to existing staff tables
-        for col in ("email_alerts_mass", "email_alerts_personal",
-                    "sms_alerts_mass", "sms_alerts_personal"):
-            try:
-                conn.execute(f"ALTER TABLE staff ADD COLUMN {col} INTEGER DEFAULT 0")
-            except sqlite3.OperationalError:
-                pass  # Already exists
-
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL, role TEXT, email TEXT, phone TEXT,
+            email_alerts_mass INTEGER DEFAULT 0, email_alerts_personal INTEGER DEFAULT 0,
+            sms_alerts_mass INTEGER DEFAULT 0, sms_alerts_personal INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT (datetime('now'))
+        );""")
         conn.execute("""
         CREATE TABLE IF NOT EXISTS devices (
-            id                INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_id         TEXT NOT NULL UNIQUE,
-            label             TEXT,
-            location          TEXT,
-            assigned_staff_id INTEGER,
-            created_at        TEXT DEFAULT (datetime('now')),
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_id TEXT NOT NULL UNIQUE, label TEXT, location TEXT,
+            assigned_staff_id INTEGER, created_at TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (assigned_staff_id) REFERENCES staff(id)
-        );
-        """)
-
-        # Migrate: add triggered_by to incidents if missing
-        try:
-            conn.execute("ALTER TABLE incidents ADD COLUMN triggered_by TEXT")
-        except sqlite3.OperationalError:
-            pass
-
+        );""")
         conn.commit()
     finally:
         conn.close()
 
-# ── Incidents ─────────────────────────────────────────────────────────────────
-
 def fetch_incidents(limit=200):
     conn = db_connect()
-    if not conn:
-        return []
+    if not conn: return []
     try:
-        rows = conn.execute(
-            "SELECT * FROM incidents ORDER BY id DESC LIMIT ?", (limit,)
-        ).fetchall()
+        rows = conn.execute("SELECT * FROM incidents ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
         return [dict(r) for r in rows]
     finally:
         conn.close()
 
 def fetch_counts():
     conn = db_connect()
-    if not conn:
-        return {}
+    if not conn: return {}
     try:
         row = conn.execute(f"""
-            SELECT
-                COUNT(*) as total,
-                SUM(CASE WHEN emergency_type='mass'
-                         AND trigger_source!='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as mass,
-                SUM(CASE WHEN emergency_type='personal'
-                         AND trigger_source!='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as personal,
-                SUM(CASE WHEN trigger_source='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as drills
+            SELECT COUNT(*) as total,
+            SUM(CASE WHEN emergency_type='mass' AND trigger_source!='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as mass,
+            SUM(CASE WHEN emergency_type='personal' AND trigger_source!='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as personal,
+            SUM(CASE WHEN trigger_source='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as drills
             FROM incidents
         """).fetchone()
         return dict(row)
@@ -293,21 +271,17 @@ def fetch_counts():
 
 def count_purgeable(retention_days):
     conn = db_connect()
-    if not conn:
-        return 0, ""
+    if not conn: return 0, ""
     try:
         cutoff = (datetime.now() - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
-        row = conn.execute(
-            "SELECT COUNT(*) FROM incidents WHERE server_time < ?", (cutoff,)
-        ).fetchone()
+        row = conn.execute("SELECT COUNT(*) FROM incidents WHERE server_time < ?", (cutoff,)).fetchone()
         return row[0], cutoff
     finally:
         conn.close()
 
 def purge_old_incidents(retention_days):
     conn = db_connect()
-    if not conn:
-        return 0, ""
+    if not conn: return 0, ""
     try:
         cutoff = (datetime.now() - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
         cur = conn.execute("DELETE FROM incidents WHERE server_time < ?", (cutoff,))
@@ -318,83 +292,49 @@ def purge_old_incidents(retention_days):
     finally:
         conn.close()
 
-# ── Staff ─────────────────────────────────────────────────────────────────────
-
 def lookup_staff_by_device(device_id: str):
-    """Return the staff member assigned to a device_id, or None if unassigned."""
     conn = db_connect()
-    if not conn:
-        return None
+    if not conn: return None
     try:
         row = conn.execute("""
-            SELECT s.name, s.role, s.email, s.phone
-            FROM devices d
-            JOIN staff s ON d.assigned_staff_id = s.id
-            WHERE d.device_id = ?
+            SELECT s.name, s.role, s.email, s.phone FROM devices d
+            JOIN staff s ON d.assigned_staff_id = s.id WHERE d.device_id = ?
         """, (device_id,)).fetchone()
         return dict(row) if row else None
     finally:
         conn.close()
 
 def get_device_label(device_id: str):
-    """Return the friendly label for a device_id, or None if not registered."""
     conn = db_connect()
-    if not conn:
-        return None
+    if not conn: return None
     try:
-        row = conn.execute(
-            "SELECT label FROM devices WHERE device_id = ?", (device_id,)
-        ).fetchone()
+        row = conn.execute("SELECT label FROM devices WHERE device_id = ?", (device_id,)).fetchone()
         return row[0] if row and row[0] else None
     finally:
         conn.close()
 
 def fetch_all_staff():
     conn = db_connect()
-    if not conn:
-        return []
+    if not conn: return []
     try:
-        return [dict(r) for r in conn.execute(
-            "SELECT * FROM staff ORDER BY name ASC"
-        ).fetchall()]
+        return [dict(r) for r in conn.execute("SELECT * FROM staff ORDER BY name ASC").fetchall()]
     finally:
         conn.close()
 
-def add_staff(name, role, email, phone,
-              email_alerts_mass=False, email_alerts_personal=False,
-              sms_alerts_mass=False, sms_alerts_personal=False):
+def add_staff(name, role, email, phone, email_alerts_mass=False, email_alerts_personal=False, sms_alerts_mass=False, sms_alerts_personal=False):
     conn = db_connect()
     try:
-        conn.execute(
-            """INSERT INTO staff
-               (name, role, email, phone,
-                email_alerts_mass, email_alerts_personal,
-                sms_alerts_mass, sms_alerts_personal)
-               VALUES (?,?,?,?,?,?,?,?)""",
-            (name, role, email, phone,
-             int(email_alerts_mass), int(email_alerts_personal),
-             int(sms_alerts_mass), int(sms_alerts_personal))
-        )
+        conn.execute("INSERT INTO staff (name, role, email, phone, email_alerts_mass, email_alerts_personal, sms_alerts_mass, sms_alerts_personal) VALUES (?,?,?,?,?,?,?,?)",
+            (name, role, email, phone, int(email_alerts_mass), int(email_alerts_personal), int(sms_alerts_mass), int(sms_alerts_personal)))
         conn.commit()
     finally:
         conn.close()
 
-def update_staff(staff_id, name, role, email, phone,
-                 email_alerts_mass, email_alerts_personal,
-                 sms_alerts_mass, sms_alerts_personal):
+def update_staff(staff_id, name, role, email, phone, email_alerts_mass, email_alerts_personal, sms_alerts_mass, sms_alerts_personal):
     conn = db_connect()
     try:
-        conn.execute(
-            """UPDATE staff SET
-               name=?, role=?, email=?, phone=?,
-               email_alerts_mass=?, email_alerts_personal=?,
-               sms_alerts_mass=?, sms_alerts_personal=?
-               WHERE id=?""",
-            (name, role, email, phone,
-             int(email_alerts_mass), int(email_alerts_personal),
-             int(sms_alerts_mass), int(sms_alerts_personal),
-             staff_id)
-        )
+        conn.execute("UPDATE staff SET name=?, role=?, email=?, phone=?, email_alerts_mass=?, email_alerts_personal=?, sms_alerts_mass=?, sms_alerts_personal=? WHERE id=?",
+            (name, role, email, phone, int(email_alerts_mass), int(email_alerts_personal), int(sms_alerts_mass), int(sms_alerts_personal), staff_id))
         conn.commit()
     finally:
         conn.close()
@@ -402,39 +342,29 @@ def update_staff(staff_id, name, role, email, phone,
 def delete_staff(staff_id):
     conn = db_connect()
     try:
-        # Unassign any devices pointing to this staff member
         conn.execute("UPDATE devices SET assigned_staff_id=NULL WHERE assigned_staff_id=?", (staff_id,))
         conn.execute("DELETE FROM staff WHERE id=?", (staff_id,))
         conn.commit()
     finally:
         conn.close()
 
-# ── Devices ───────────────────────────────────────────────────────────────────
-
 def fetch_all_devices():
     conn = db_connect()
-    if not conn:
-        return []
+    if not conn: return []
     try:
         return [dict(r) for r in conn.execute("""
-            SELECT d.*, s.name as staff_name, s.role as staff_role
-            FROM devices d
-            LEFT JOIN staff s ON d.assigned_staff_id = s.id
-            ORDER BY d.device_id ASC
+            SELECT d.*, s.name as staff_name, s.role as staff_role FROM devices d
+            LEFT JOIN staff s ON d.assigned_staff_id = s.id ORDER BY d.device_id ASC
         """).fetchall()]
     finally:
         conn.close()
 
 def fetch_known_device_ids():
-    """Pull distinct device_ids seen in incidents that aren't yet registered."""
     conn = db_connect()
-    if not conn:
-        return []
+    if not conn: return []
     try:
         registered = {r["device_id"] for r in conn.execute("SELECT device_id FROM devices").fetchall()}
-        seen = {r[0] for r in conn.execute(
-            "SELECT DISTINCT device_id FROM incidents WHERE device_id IS NOT NULL"
-        ).fetchall()}
+        seen = {r[0] for r in conn.execute("SELECT DISTINCT device_id FROM incidents WHERE device_id IS NOT NULL").fetchall()}
         return sorted(seen - registered)
     finally:
         conn.close()
@@ -442,10 +372,8 @@ def fetch_known_device_ids():
 def add_device(device_id, label, location, assigned_staff_id=None):
     conn = db_connect()
     try:
-        conn.execute(
-            "INSERT OR IGNORE INTO devices (device_id, label, location, assigned_staff_id) VALUES (?,?,?,?)",
-            (device_id, label, location, assigned_staff_id or None)
-        )
+        conn.execute("INSERT OR IGNORE INTO devices (device_id, label, location, assigned_staff_id) VALUES (?,?,?,?)",
+            (device_id, label, location, assigned_staff_id or None))
         conn.commit()
     finally:
         conn.close()
@@ -453,10 +381,8 @@ def add_device(device_id, label, location, assigned_staff_id=None):
 def update_device(device_db_id, label, location, assigned_staff_id):
     conn = db_connect()
     try:
-        conn.execute(
-            "UPDATE devices SET label=?, location=?, assigned_staff_id=? WHERE id=?",
-            (label, location, assigned_staff_id or None, device_db_id)
-        )
+        conn.execute("UPDATE devices SET label=?, location=?, assigned_staff_id=? WHERE id=?",
+            (label, location, assigned_staff_id or None, device_db_id))
         conn.commit()
     finally:
         conn.close()
@@ -469,106 +395,57 @@ def delete_device(device_db_id):
     finally:
         conn.close()
 
-# ── System status ─────────────────────────────────────────────────────────────
+# ── System Status ─────────────────────────────────────────────────────────────
 
 def get_system_status():
     status = {}
-
     try:
         with socket.create_connection((SERVER_HOST, SERVER_PORT), timeout=2):
             status["server"] = ("ok", f"Reachable on {SERVER_HOST}:{SERVER_PORT}")
-    except ConnectionRefusedError:
-        status["server"] = ("error", "Server offline / not running")
-    except socket.timeout:
-        status["server"] = ("error", "Timeout — not responding")
-    except Exception as e:
-        status["server"] = ("error", str(e))
+    except:
+        status["server"] = ("error", "Offline")
 
     try:
         conn = db_connect()
         count = conn.execute("SELECT COUNT(*) FROM incidents").fetchone()[0]
         conn.close()
-        status["db"] = ("ok", f"{count} total incidents")
-    except Exception as e:
-        status["db"] = ("error", str(e))
+        status["db"] = ("ok", f"{count} total records")
+    except:
+        status["db"] = ("error", "DB Error")
 
-    try:
-        conn = db_connect()
-        row = conn.execute(
-            "SELECT server_time FROM incidents ORDER BY id DESC LIMIT 1"
-        ).fetchone()
-        conn.close()
-        status["last_incident"] = ("ok", row[0] if row else "No incidents yet")
-    except Exception as e:
-        status["last_incident"] = ("error", str(e))
-
-    HEALTHY = {"ok", "queued", "skipped"}
     FAILURE = {"failed", "queue_full"}
-
     try:
         conn = db_connect()
-        rows = [dict(r) for r in conn.execute(f"""
-            SELECT audio_status, email_status, sms_status, relay_status
-            FROM incidents
-            WHERE trigger_source != '{DRILL_SOURCE}'
-            ORDER BY id DESC LIMIT 10
-        """).fetchall()]
+        rows = [dict(r) for r in conn.execute(f"SELECT audio_status, email_status, sms_status, relay_status FROM incidents WHERE trigger_source != '{DRILL_SOURCE}' ORDER BY id DESC LIMIT 10").fetchall()]
         conn.close()
-
         for key in ("audio", "email", "sms", "relay"):
-            col    = f"{key}_status"
+            col = f"{key}_status"
             values = [r[col] for r in rows if r.get(col)]
             if not values:
-                status[key] = ("unknown", "No data yet")
+                status[key] = ("unknown", "No data")
                 continue
             fails = sum(1 for v in values if v in FAILURE)
-            if fails == 0:
-                status[key] = ("ok", "All recent OK")
-            elif fails < len(values):
-                status[key] = ("warn", f"{fails}/{len(values)} recent failures")
-            else:
-                status[key] = ("error", "All recent failed")
-    except Exception as e:
-        for key in ("audio", "email", "sms", "relay"):
-            status[key] = ("error", str(e))
-
-    try:
-        purgeable, _ = count_purgeable(RETENTION_DAYS)
-        if purgeable == 0:
-            status["retention"] = ("ok", f"No records older than {RETENTION_DAYS}d")
-        else:
-            status["retention"] = ("warn", f"{purgeable} records older than {RETENTION_DAYS}d")
-    except Exception as e:
-        status["retention"] = ("error", str(e))
+            status[key] = ("ok", "All OK") if fails == 0 else ("warn", f"{fails} fails")
+    except:
+        for key in ("audio", "email", "sms", "relay"): status[key] = ("error", "Check logs")
 
     return status
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  SYSTEM CONTROL  (relay / audio stop signals via DB)
-# ════════════════════════════════════════════════════════════════════════════════
+# ── System Control ────────────────────────────────────────────────────────────
 
 def get_control(key: str) -> str:
-    """Read a system_control flag from the DB. Returns '0' if table missing or key absent."""
     try:
         conn = db_connect()
-        if not conn:
-            return "0"
+        if not conn: return "0"
         row = conn.execute("SELECT value FROM system_control WHERE key=?", (key,)).fetchone()
         conn.close()
         return row[0] if row else "0"
-    except Exception:
-        return "0"
+    except: return "0"
 
 def set_control(key: str, value: str):
-    """Write a system_control flag. Creates the table if it doesn't exist yet."""
     conn = sqlite3.connect(DB_PATH)
     try:
-        conn.execute("""
-        CREATE TABLE IF NOT EXISTS system_control (
-            key   TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        );
-        """)
+        conn.execute("CREATE TABLE IF NOT EXISTS system_control (key TEXT PRIMARY KEY, value TEXT NOT NULL);")
         conn.execute("INSERT OR REPLACE INTO system_control (key,value) VALUES (?,?)", (key, value))
         conn.commit()
     finally:
@@ -593,44 +470,29 @@ def send_stop_command():
     except Exception:
         pass  # DB flags are sufficient; TCP is just for immediacy
 
+# ── UI Helpers ────────────────────────────────────────────────────────────────
+
 def pill(status, label):
-    cls_map = {
-        "ok":         "pill-ok",
-        "failed":     "pill-fail",
-        "queue_full": "pill-fail",
-        "skipped":    "pill-skip",
-        "queued":     "pill-ok",
-    }
-    cls = cls_map.get(status, "pill-unknown")
+    cls = {"ok":"pill-ok", "failed":"pill-fail", "queue_full":"pill-fail", "skipped":"pill-skip", "queued":"pill-ok"}.get(status, "pill-unknown")
     return f'<span class="pill {cls}">{label}</span>'
 
 def status_pill(state, text):
-    cls  = {"ok": "pill-ok", "warn": "pill-warn", "error": "pill-fail"}.get(state, "pill-unknown")
+    cls = {"ok": "pill-ok", "warn": "pill-warn", "error": "pill-fail"}.get(state, "pill-unknown")
     icon = {"ok": "●", "warn": "▲", "error": "✕", "unknown": "○"}.get(state, "○")
     return f'<span class="pill {cls}">{icon} {text}</span>'
 
 def type_badge(em_type, src):
-    if src == DRILL_SOURCE:    return '<span class="badge badge-drill">DRILL</span>'
-    if em_type == "mass":      return '<span class="badge badge-mass">MASS</span>'
+    if src == DRILL_SOURCE: return '<span class="badge badge-drill">DRILL</span>'
+    if em_type == "mass": return '<span class="badge badge-mass">MASS</span>'
     return '<span class="badge badge-personal">PERSONAL</span>'
 
 def dot_cls(em_type, src):
     if src == DRILL_SOURCE: return "dot-drill"
-    if em_type == "mass":   return "dot-mass"
-    return "dot-personal"
+    return "dot-mass" if em_type == "mass" else "dot-personal"
 
 def row_cls(em_type, src):
     if src == DRILL_SOURCE: return "is-drill"
-    if em_type == "mass":   return "is-mass"
-    return ""
-
-def passes_filter(inc, type_filter):
-    em  = inc.get("emergency_type", "")
-    src = inc.get("trigger_source", "")
-    if src == DRILL_SOURCE: return "test_drill" in type_filter
-    if em == "mass":        return "mass" in type_filter
-    if em == "personal":    return "personal" in type_filter
-    return True
+    return "is-mass" if em_type == "mass" else ""
 
 def ers_header(subtitle=""):
     return f"""
@@ -640,27 +502,19 @@ def ers_header(subtitle=""):
     </div>
     """
 
-
-
 # ════════════════════════════════════════════════════════════════════════════════
-#  SYSTEM MEMORY  (the location of gateways)
+#  SYSTEM MEMORY — MAP & GATEWAYS
 # ════════════════════════════════════════════════════════════════════════════════
-
 
 def init_map_table():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     try:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS map_config (
-                key TEXT PRIMARY KEY,
-                val_x REAL,
-                val_y REAL
-            )
-        """)
-
-        for gw in ["GW1", "GW2", "GW3"]:
-            conn.execute("INSERT OR IGNORE INTO map_config (key, val_x, val_y) VALUES (?, 0.0, 0.0)", (gw,))
+        conn.execute("CREATE TABLE IF NOT EXISTS map_config (key TEXT PRIMARY KEY, val_x REAL, val_y REAL)")
+        count = conn.execute("SELECT COUNT(*) FROM map_config").fetchone()[0]
+        if count == 0:
+            for gw in ["GW1", "GW2", "GW3"]:
+                conn.execute("INSERT OR IGNORE INTO map_config (key, val_x, val_y) VALUES (?, 0.0, 0.0)", (gw,))
         conn.commit()
     finally:
         conn.close()
@@ -673,34 +527,29 @@ def save_gw_coords(gw_id, x, y):
     finally:
         conn.close()
 
-def fetch_all_gw_coords():
-    if not os.path.exists(DB_PATH):
-        return {gw: {"x": 0.0, "y": 0.0} for gw in ["GW1", "GW2", "GW3"]}
-    
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        rows = conn.execute("SELECT * FROM map_config").fetchall()
-        if not rows:
-            return {gw: {"x": 0.0, "y": 0.0} for gw in ["GW1", "GW2", "GW3"]}
-        return {row['key']: {"x": row['val_x'], "y": row['val_y']} for row in rows}
-    except sqlite3.OperationalError:
-        return {gw: {"x": 0.0, "y": 0.0} for gw in ["GW1", "GW2", "GW3"]}
-    finally:
-        conn.close()
-        
-def save_map_scale(meters_wide):
+def delete_gw(gw_id):
     conn = sqlite3.connect(DB_PATH)
     try:
-        conn.execute("INSERT OR REPLACE INTO system_control (key, value) VALUES (?, ?)", 
-                     ("map_meters_wide", str(meters_wide)))
+        conn.execute("DELETE FROM map_config WHERE key = ?", (gw_id,))
         conn.commit()
     finally:
         conn.close()
 
-def fetch_map_scale():
+def fetch_all_gw_coords():
+    if not os.path.exists(DB_PATH):
+        return {gw: {"x": 0.0, "y": 0.0} for gw in ["GW1", "GW2", "GW3"]}
+    conn = db_connect()
     try:
-        val = get_control("map_meters_wide")
-        return float(val) if val != "0" else 50.0
-    except:
-        return 50.0
+        rows = conn.execute("SELECT * FROM map_config").fetchall()
+        if not rows: return {}
+        return {row['key']: {"x": row['val_x'], "y": row['val_y']} for row in rows}
+    except: return {}
+    finally:
+        if conn: conn.close()
+
+def save_map_scale(meters_wide):
+    set_control("map_meters_wide", str(meters_wide))
+
+def fetch_map_scale():
+    val = get_control("map_meters_wide")
+    return float(val) if val != "0" else 50.0

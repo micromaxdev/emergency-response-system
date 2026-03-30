@@ -1,59 +1,53 @@
 """
-pages/4_Configuration.py — Device management and alert recipient assignment.
-Email/SMS recipients are configured separately for mass and personal emergencies
+websites/pages/configuration.py — Device, Alert, Audio and Map Management.
+Full version with no omissions. Centrally managed via utils.py (ers).
 """
-
-
 
 import streamlit as st
 import os, sys
 import plotly.express as px
 from PIL import Image
-import ers_shared as ers
+
+# ════════════════════════════════════════════════════════════════════════════════
+#  1. PATH & MODULE IMPORT — Connect to utils.py
+# ════════════════════════════════════════════════════════════════════════════════
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(CURRENT_DIR)
+if PARENT_DIR not in sys.path:
+    sys.path.insert(0, PARENT_DIR)
+
+import utils as ers  
 ers.init_map_table()
+if os.path.exists(ers.DB_PATH):
+    ers.init_extra_tables()
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
-MAP_DIR = os.path.join(BASE_DIR, "assets", "maps")
-os.makedirs(MAP_DIR, exist_ok=True)
-
-if "gw_coords" not in st.session_state: 
-    try: 
-        st.session_state.gw_coords = ers.fetch_all_gw_coords() 
-    except:  
-        st.session_state.gw_coords = { 
-         "GW1": {"x": 0.0, "y": 0.0}, 
-         "GW2": {"x": 5.0, "y": 0.0}, 
-         "GW3": {"x": 2.5, "y": 5.0}, 
-         }
-
-
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-
+# ════════════════════════════════════════════════════════════════════════════════
+#  2. PAGE SETUP & SESSION STATE
+# ════════════════════════════════════════════════════════════════════════════════
 st.set_page_config(page_title="ERS · Configuration", page_icon="⚙️", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
-if os.path.exists(ers.DB_PATH):
-    ers.init_extra_tables()
+if "gw_coords" not in st.session_state: 
+    st.session_state.gw_coords = ers.fetch_all_gw_coords()
 
 if "edit_device_id"   not in st.session_state: st.session_state.edit_device_id   = None
 if "delete_device_id" not in st.session_state: st.session_state.delete_device_id = None
 if "device_saved"     not in st.session_state: st.session_state.device_saved     = False
 if "alert_saved"      not in st.session_state: st.session_state.alert_saved      = False
+if "audio_saved"      not in st.session_state: st.session_state.audio_saved      = False
 
 with st.sidebar:
-    st.markdown('<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:3px;margin-bottom:20px;">CONFIGURATION</div>', unsafe_allow_html=True)
+    st.markdown('<div class="ers-logo" style="font-size:1.8rem; letter-spacing:4px;">ERS</div>', unsafe_allow_html=True)
+    st.markdown('<div class="ers-sub">CONFIGURATION</div>', unsafe_allow_html=True)
     st.markdown("---")
     st.caption("Sections:")
-    st.markdown("- Devices\n- Mass Emergency Alerts\n- Personal Emergency Alerts")
+    st.markdown("- Devices\n- Mass Alerts\n- Personal Alerts\n- Audio\n- Map & Gateways")
 
 st.markdown(ers.ers_header("Configuration"), unsafe_allow_html=True)
 
 if not os.path.exists(ers.DB_PATH):
-    st.error(f"⚠ Database not found at `{ers.DB_PATH}`.")
+    st.error(f"⚠ Database not found at `{ers.DB_PATH}`. Ensure data/ers.sqlite exists.")
     st.stop()
 
 all_staff = ers.fetch_all_staff()
@@ -61,7 +55,7 @@ staff_options           = {s["id"]: f"{s['name']} ({s.get('role','—')})" for s
 staff_options_with_none = {None: "— Unassigned —", **staff_options}
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  DEVICES
+#  3. DEVICE MANAGEMENT
 # ════════════════════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">Device Management</div>', unsafe_allow_html=True)
 
@@ -105,9 +99,9 @@ with st.expander("➕  Register New Device", expanded=False):
 devices = ers.fetch_all_devices()
 
 if not devices:
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.75rem;color:#586069;padding:16px 0;">No devices registered yet.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mono" style="padding:16px 0;">No devices registered yet.</div>', unsafe_allow_html=True)
 else:
-    st.markdown(f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.7rem;color:#586069;margin-bottom:12px;">{len(devices)} registered device(s)</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="mono" style="margin-bottom:12px;">{len(devices)} registered device(s)</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="tbl-header">
       <span style="min-width:160px">Device ID</span>
@@ -119,7 +113,6 @@ else:
 
     for d in devices:
         did = d["id"]
-
         if st.session_state.edit_device_id == did:
             with st.form(f"edit_device_{did}"):
                 dc1, dc2 = st.columns(2)
@@ -132,8 +125,7 @@ else:
                         "Assigned Staff",
                         options=list(staff_options_with_none.keys()),
                         format_func=lambda k: staff_options_with_none[k],
-                        index=list(staff_options_with_none.keys()).index(cur)
-                              if cur in staff_options_with_none else 0,
+                        index=list(staff_options_with_none.keys()).index(cur) if cur in staff_options_with_none else 0,
                     )
                 sb1, sb2 = st.columns(2)
                 with sb1:
@@ -146,7 +138,6 @@ else:
                     if st.form_submit_button("✕ Cancel", use_container_width=True):
                         st.session_state.edit_device_id = None
                         st.rerun()
-
         elif st.session_state.delete_device_id == did:
             st.warning(f"Remove device **{d['device_id']}**? Incident history is kept.")
             dc1, dc2 = st.columns(2)
@@ -167,34 +158,27 @@ else:
             )
             st.markdown(f"""
             <div class="inc-row">
-              <span style="min-width:160px;font-family:IBM Plex Mono,monospace;font-size:0.72rem;">{d['device_id']}</span>
-              <span style="min-width:160px;font-weight:600;font-size:0.82rem;">{d.get('label') or '—'}</span>
-              <span style="flex:1;font-size:0.78rem;color:#586069;">{d.get('location') or '—'}</span>
+              <span style="min-width:160px; font-family:IBM Plex Mono,monospace;">{d['device_id']}</span>
+              <span style="min-width:160px; font-weight:600;">{d.get('label') or '—'}</span>
+              <span style="flex:1; color:#586069;">{d.get('location') or '—'}</span>
               <span style="min-width:180px">{assign_pill}</span>
             </div>""", unsafe_allow_html=True)
 
-            col_edit, col_del, _ = st.columns([1, 1, 6])
-            with col_edit:
-                if st.button("Edit",   key=f"devedit_{did}",   use_container_width=True):
-                    st.session_state.edit_device_id   = did
-                    st.session_state.delete_device_id = None
+            ce, cd, _ = st.columns([1, 1, 6])
+            with ce:
+                if st.button("Edit", key=f"ed_{did}", use_container_width=True):
+                    st.session_state.edit_device_id = did
                     st.rerun()
-            with col_del:
-                if st.button("Remove", key=f"devdelete_{did}", use_container_width=True):
+            with cd:
+                if st.button("Remove", key=f"rm_{did}", use_container_width=True):
                     st.session_state.delete_device_id = did
-                    st.session_state.edit_device_id   = None
                     st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  ALERT RECIPIENTS — MASS EMERGENCY
+#  4. ALERT RECIPIENTS — MASS EMERGENCY
 # ════════════════════════════════════════════════════════════════════════════════
 st.markdown("---")
-st.markdown("""
-<div class="section-title">Mass Emergency Alert Recipients</div>
-<div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#586069;margin-bottom:16px;line-height:1.8;">
-  These staff members receive alerts when a <strong>mass emergency</strong> is triggered.
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="section-title">Mass Emergency Alert Recipients</div>', unsafe_allow_html=True)
 
 if st.session_state.alert_saved:
     st.success("✓ Alert assignments updated.")
@@ -207,17 +191,17 @@ else:
     mc1, mc2 = st.columns(2)
 
     with mc1:
-        st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">✉ Email — Mass Emergency</div>', unsafe_allow_html=True)
+        st.markdown('✉ Email — Mass Emergency')
         with st.form("mass_email_form"):
             mass_email_states = {}
             for s in fresh:
                 mass_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})  —  {s.get('email') or 'no email'}",
+                    f"{s['name']} ({s.get('role','—')})",
                     value=bool(s.get("email_alerts_mass")),
                     key=f"me_{s['id']}",
                     disabled=not s.get("email"),
                 )
-            if st.form_submit_button("Save", use_container_width=True):
+            if st.form_submit_button("Save Email Recipients", use_container_width=True):
                 for s in fresh:
                     ers.update_staff(
                         s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
@@ -228,17 +212,17 @@ else:
                 st.rerun()
 
     with mc2:
-        st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📱 SMS — Mass Emergency</div>', unsafe_allow_html=True)
+        st.markdown('📱 SMS — Mass Emergency')
         with st.form("mass_sms_form"):
             mass_sms_states = {}
             for s in fresh:
                 mass_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})  —  {s.get('phone') or 'no phone'}",
+                    f"{s['name']} ({s.get('role','—')})",
                     value=bool(s.get("sms_alerts_mass")),
                     key=f"ms_{s['id']}",
                     disabled=not s.get("phone"),
                 )
-            if st.form_submit_button("Save", use_container_width=True):
+            if st.form_submit_button("Save SMS Recipients", use_container_width=True):
                 for s in fresh:
                     ers.update_staff(
                         s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
@@ -249,31 +233,26 @@ else:
                 st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  ALERT RECIPIENTS — PERSONAL EMERGENCY
+#  5. ALERT RECIPIENTS — PERSONAL EMERGENCY
 # ════════════════════════════════════════════════════════════════════════════════
 st.markdown("---")
-st.markdown("""
-<div class="section-title">Personal Emergency Alert Recipients</div>
-<div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#586069;margin-bottom:16px;line-height:1.8;">
-  These staff members receive alerts when a <strong>personal emergency</strong> is triggered.
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="section-title">Personal Emergency Alert Recipients</div>', unsafe_allow_html=True)
 
 fresh2 = ers.fetch_all_staff()
 pc1, pc2 = st.columns(2)
 
 with pc1:
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">✉ Email — Personal Emergency</div>', unsafe_allow_html=True)
+    st.markdown('✉ Email — Personal Emergency')
     with st.form("personal_email_form"):
         pers_email_states = {}
         for s in fresh2:
             pers_email_states[s["id"]] = st.checkbox(
-                f"{s['name']} ({s.get('role','—')})  —  {s.get('email') or 'no email'}",
+                f"{s['name']} ({s.get('role','—')})",
                 value=bool(s.get("email_alerts_personal")),
                 key=f"pe_{s['id']}",
                 disabled=not s.get("email"),
             )
-        if st.form_submit_button("Save", use_container_width=True):
+        if st.form_submit_button("Save Email Recipients", use_container_width=True):
             for s in fresh2:
                 ers.update_staff(
                     s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
@@ -284,17 +263,17 @@ with pc1:
             st.rerun()
 
 with pc2:
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📱 SMS — Personal Emergency</div>', unsafe_allow_html=True)
+    st.markdown('📱 SMS — Personal Emergency')
     with st.form("personal_sms_form"):
         pers_sms_states = {}
         for s in fresh2:
             pers_sms_states[s["id"]] = st.checkbox(
-                f"{s['name']} ({s.get('role','—')})  —  {s.get('phone') or 'no phone'}",
+                f"{s['name']} ({s.get('role','—')})",
                 value=bool(s.get("sms_alerts_personal")),
                 key=f"ps_{s['id']}",
                 disabled=not s.get("phone"),
             )
-        if st.form_submit_button("Save", use_container_width=True):
+        if st.form_submit_button("Save SMS Recipients", use_container_width=True):
             for s in fresh2:
                 ers.update_staff(
                     s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
@@ -305,88 +284,58 @@ with pc2:
             st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  AUDIO SETTINGS
+#  6. AUDIO SETTINGS — Corrected Paths
 # ════════════════════════════════════════════════════════════════════════════════
 st.markdown("---")
-st.markdown("""
-<div class="section-title">Alert Audio Files</div>
-<div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#586069;margin-bottom:16px;line-height:1.8;">
-  Upload the audio files that will play when each alert type is triggered.
-  Accepted formats: mp3, wav, ogg.
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="section-title">Alert Audio Files</div>', unsafe_allow_html=True)
 
-# Fixed path — must match AUDIO_DIR in audio_alert.py
-AUDIO_DIR = '/home/micromax/ers_server/audio'
-os.makedirs(AUDIO_DIR, exist_ok=True)
-
-if "audio_saved" not in st.session_state:
-    st.session_state.audio_saved = False
+AUDIO_DIR = ers.AUDIO_DIR
 
 if st.session_state.audio_saved:
-    st.success("✓ Audio files saved.")
+    st.success(f"✓ Audio files saved to {AUDIO_DIR}")
     st.session_state.audio_saved = False
 
 ac1, ac2 = st.columns(2)
 
 with ac1:
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">🔔 Test / Drill Alert Audio</div>', unsafe_allow_html=True)
-    test_audio = st.file_uploader(
-        "Drag and drop test alert audio here",
-        type=["mp3", "wav", "ogg"],
-        key="test_audio_upload",
-    )
-    existing_test = next(
-        (f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("test_alert_")), None
-    )
+    st.markdown('**🔔 Test / Drill Alert Audio**')
+    test_audio = st.file_uploader("Upload test audio", type=["mp3", "wav", "ogg"], key="test_up")
+    existing_test = next((f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("test_alert_")), None)
     if test_audio:
-        st.audio(test_audio, format=test_audio.type)
+        st.audio(test_audio)
     elif existing_test:
-        st.markdown(f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.7rem;color:#586069;margin-top:6px;">Current file: <strong>{existing_test}</strong></div>', unsafe_allow_html=True)
         st.audio(os.path.join(AUDIO_DIR, existing_test))
 
 with ac2:
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">🚨 Mass Emergency Alert Audio</div>', unsafe_allow_html=True)
-    emergency_audio = st.file_uploader(
-        "Drag and drop mass emergency audio here",
-        type=["mp3", "wav", "ogg"],
-        key="emergency_audio_upload",
-    )
-    existing_emergency = next(
-        (f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("emergency_alert_")), None
-    )
+    st.markdown('**🚨 Mass Emergency Alert Audio**')
+    emergency_audio = st.file_uploader("Upload mass emergency audio", type=["mp3", "wav", "ogg"], key="em_up")
+    existing_em = next((f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("emergency_alert_")), None)
     if emergency_audio:
-        st.audio(emergency_audio, format=emergency_audio.type)
-    elif existing_emergency:
-        st.markdown(f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.7rem;color:#586069;margin-top:6px;">Current file: <strong>{existing_emergency}</strong></div>', unsafe_allow_html=True)
-        st.audio(os.path.join(AUDIO_DIR, existing_emergency))
+        st.audio(emergency_audio)
+    elif existing_em:
+        st.audio(os.path.join(AUDIO_DIR, existing_em))
 
-if st.button("💾 Save Audio Files", use_container_width=False):
-    if not test_audio and not emergency_audio:
-        st.warning("⚠ No new audio files selected.")
-    else:
-        if test_audio:
-            for f in os.listdir(AUDIO_DIR):
-                if f.startswith("test_alert_"):
-                    os.remove(os.path.join(AUDIO_DIR, f))
-            with open(os.path.join(AUDIO_DIR, "test_alert_" + test_audio.name), "wb") as fh:
-                fh.write(test_audio.getbuffer())
-        if emergency_audio:
-            for f in os.listdir(AUDIO_DIR):
-                if f.startswith("emergency_alert_"):
-                    os.remove(os.path.join(AUDIO_DIR, f))
-            with open(os.path.join(AUDIO_DIR, "emergency_alert_" + emergency_audio.name), "wb") as fh:
-                fh.write(emergency_audio.getbuffer())
-        st.session_state.audio_saved = True
-        st.rerun()
-        
+if st.button("💾 Save Audio Files", use_container_width=True):
+    if test_audio:
+        for f in os.listdir(AUDIO_DIR):
+            if f.startswith("test_alert_"): os.remove(os.path.join(AUDIO_DIR, f))
+        with open(os.path.join(AUDIO_DIR, f"test_alert_{test_audio.name}"), "wb") as fh:
+            fh.write(test_audio.getbuffer())
+    if emergency_audio:
+        for f in os.listdir(AUDIO_DIR):
+            if f.startswith("emergency_alert_"): os.remove(os.path.join(AUDIO_DIR, f))
+        with open(os.path.join(AUDIO_DIR, f"emergency_alert_{emergency_audio.name}"), "wb") as fh:
+            fh.write(emergency_audio.getbuffer())
+    st.session_state.audio_saved = True
+    st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  MAP & GATEWAY CONFIGURATION
+#  7. MAP & GATEWAY CONFIGURATION — Dynamic Upgrade
 # ════════════════════════════════════════════════════════════════════════════════
 st.markdown("---")
-st.markdown('<div class="section-title">Company Map & Gateway Setup</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Dynamic Map & Gateway Setup</div>', unsafe_allow_html=True)
 
+current_gws = ers.fetch_all_gw_coords()
 if "map_meters_wide" not in st.session_state:
     st.session_state.map_meters_wide = ers.fetch_map_scale()
 
@@ -394,62 +343,72 @@ col_map1, col_map2 = st.columns([1, 2])
 
 with col_map1:
     st.markdown("### 1. Map & Scale")
-    uploaded_map = st.file_uploader("Upload Floor Plan", type=["png", "jpg", "jpeg"])
+    uploaded_map = st.file_uploader("Upload Floor Plan", type=["png", "jpg", "jpeg"], key="map_up")
     if uploaded_map:
-        save_path = os.path.join(MAP_DIR, "company_map.png")
+        save_path = os.path.join(ers.MAP_DIR, "company_map.png")
         with open(save_path, "wb") as f:
             f.write(uploaded_map.getbuffer())
-        st.success("Map saved!")
+        st.success("✓ Map saved!")
         st.rerun()
 
     new_scale = st.number_input(
         "Office Actual Width (Meters)", 
         min_value=1.0, 
-        value=st.session_state.map_meters_wide,
-        help="Enter the actual horizontal distance of the office shown in the image."
+        value=float(st.session_state.map_meters_wide),
+        step=0.5
     )
     if new_scale != st.session_state.map_meters_wide:
         ers.save_map_scale(new_scale)
         st.session_state.map_meters_wide = new_scale
         st.rerun()
 
-    st.markdown("### 2. Gateway Locations")
-    with st.form("gw_config_form"):
-        temp_coords = {}
-        for gw in ["GW1", "GW2", "GW3"]:
-            st.markdown(f"**📍 {gw}**")
-            c1, c2 = st.columns(2)
-            cur_x = st.session_state.gw_coords.get(gw, {}).get("x", 0.0)
-            cur_y = st.session_state.gw_coords.get(gw, {}).get("y", 0.0)
-            nx = c1.number_input(f"X (m)", value=float(cur_x), key=f"inx_{gw}", step=0.1)
-            ny = c2.number_input(f"Y (m)", value=float(cur_y), key=f"iny_{gw}", step=0.1)
-            temp_coords[gw] = {"x": nx, "y": ny}
+    st.write("---")
+    st.markdown("### 2. Manage Gateways")
+    
+    with st.expander("➕ Add New Gateway"):
+        cadd1, cadd2 = st.columns([3, 1])
+        new_name = cadd1.text_input("Gateway Name", key="new_gw_name")
+        if cadd2.button("Add"):
+            if new_name and new_name not in current_gws:
+                ers.save_gw_coords(new_name, 0.0, 0.0)
+                st.rerun()
+            else:
+                st.error("Duplicate or invalid name.")
+
+    with st.form("gw_dynamic_form"):
+        temp_changes = {}
+        for gw_id, pos in current_gws.items():
+            st.markdown(f"**📍 {gw_id}**")
+            cx, cy, cdel = st.columns([2, 2, 1])
+            nx = cx.number_input("X (m)", value=float(pos['x']), key=f"x_{gw_id}")
+            ny = cy.number_input("Y (m)", value=float(pos['y']), key=f"y_{gw_id}")
+            is_del = cdel.checkbox("🗑️", key=f"del_{gw_id}")
+            temp_changes[gw_id] = "DELETE" if is_del else {"x": nx, "y": ny}
         
-        if st.form_submit_button("💾 Save Positions"):
-            for gw_id, pos in temp_coords.items():
-                ers.save_gw_coords(gw_id, pos['x'], pos['y'])
-            st.session_state.gw_coords = temp_coords
+        if st.form_submit_button("💾 Save All Changes", use_container_width=True):
+            for gid, action in temp_changes.items():
+                if action == "DELETE":
+                    ers.delete_gw(gid)
+                else:
+                    ers.save_gw_coords(gid, action['x'], action['y'])
+            st.session_state.gw_coords = ers.fetch_all_gw_coords()
             st.rerun()
 
 with col_map2:
     st.markdown("### 3. Map Preview")
-    map_img_path = os.path.join(MAP_DIR, "company_map.png")
+    map_img_path = os.path.join(ers.MAP_DIR, "company_map.png")
     
     if os.path.exists(map_img_path):
         img = Image.open(map_img_path)
         w, h = img.size
-        
-        current_meters_wide = st.session_state.map_meters_wide
-        scale = w / current_meters_wide  
+        scale = w / st.session_state.map_meters_wide
         
         fig = px.imshow(img)
         
-        for gw, pos in st.session_state.gw_coords.items():
-            pixel_x = float(pos['x']) * scale
-            pixel_y = float(pos['y']) * scale 
-            
+        for gw, pos in current_gws.items():
             fig.add_scatter(
-                x=[pixel_x], y=[pixel_y],
+                x=[float(pos['x']) * scale], 
+                y=[float(pos['y']) * scale],
                 mode="markers+text",
                 text=[f"<b>{gw}</b>"],
                 textposition="top center",
@@ -460,37 +419,30 @@ with col_map2:
         fig.update_layout(
             showlegend=False,
             margin=dict(l=0, r=0, t=0, b=0),
-            xaxis=dict(visible=True, title=f"Scale: {current_meters_wide}m total width"),
+            xaxis=dict(visible=True, title=f"Scale: {st.session_state.map_meters_wide}m total"),
             yaxis=dict(visible=True, autorange="reversed")
         )
         st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Upload a map image to preview.")
 
 # ── Live summary ──────────────────────────────────────────────────────────────
 st.markdown("---")
 st.markdown('<div class="section-title">Current Assignment Summary</div>', unsafe_allow_html=True)
 
-final = ers.fetch_all_staff()
-
-r1, r2, r3, r4 = st.columns(4)
+final_staff = ers.fetch_all_staff()
+sc1, sc2, sc3, sc4 = st.columns(4)
 groups = [
-    (r1, "✉ Email · Mass",     "email_alerts_mass",     "email"),
-    (r2, "📱 SMS · Mass",       "sms_alerts_mass",       "phone"),
-    (r3, "✉ Email · Personal",  "email_alerts_personal", "email"),
-    (r4, "📱 SMS · Personal",   "sms_alerts_personal",   "phone"),
+    (sc1, "✉ Email · Mass",     "email_alerts_mass",     "email"),
+    (sc2, "📱 SMS · Mass",       "sms_alerts_mass",       "phone"),
+    (sc3, "✉ Email · Personal",  "email_alerts_personal", "email"),
+    (sc4, "📱 SMS · Personal",   "sms_alerts_personal",   "phone"),
 ]
-for col, label, flag, contact_field in groups:
+for col, label, flag, field in groups:
     with col:
-        members = [s for s in final if s.get(flag)]
-        st.markdown(f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">{label} ({len(members)})</div>', unsafe_allow_html=True)
-        if members:
-            for s in members:
-                st.markdown(f'<div style="font-size:0.8rem;padding:4px 0;border-bottom:1px solid #f0f0f0;"><strong>{s["name"]}</strong><br><span style="color:#586069;font-size:0.72rem;">{s.get(contact_field,"")}</span></div>', unsafe_allow_html=True)
-        else:
-            st.caption("None assigned.")
+        members = [s for s in final_staff if s.get(flag)]
+        st.markdown(f'<div class="mono" style="font-size:0.6rem; letter-spacing:1px;">{label} ({len(members)})</div>', unsafe_allow_html=True)
+        for s in members:
+            st.markdown(f'<div style="font-size:0.75rem; border-bottom:1px solid #f0f0f0; padding:2px 0;">{s["name"]}</div>', unsafe_allow_html=True)
 
-st.markdown(f"""
-<div style="margin-top:40px;padding-top:14px;border-top:1px solid #1e2530;
-            font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
-            letter-spacing:2px;text-align:center;">
-  ERS · CONFIGURATION
-</div>""", unsafe_allow_html=True)
+st.markdown('<div style="margin-top:40px; text-align:center; font-family:IBM Plex Mono,monospace; font-size:0.6rem; color:#30363d; letter-spacing:2px;">ERS · CONFIGURATION</div>', unsafe_allow_html=True)

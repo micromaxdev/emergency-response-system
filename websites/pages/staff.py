@@ -7,7 +7,7 @@ import streamlit as st
 import os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import ers_shared as ers
+import utils as ers
 
 st.set_page_config(page_title="ERS · Staff", page_icon="👥", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
@@ -60,7 +60,7 @@ with st.expander("➕  Add New Staff Member", expanded=False):
             new_sms_alerts = st.checkbox("Receives SMS Alerts (Mass)")
             new_sms_pers   = st.checkbox("Receives SMS Alerts (Personal)")
 
-        submitted = st.form_submit_button("Add Staff Member", use_container_width=True)
+        submitted = st.form_submit_button("Add Staff Member", width="stretch")
         if submitted:
             if not new_name.strip():
                 st.error("Name is required.")
@@ -126,9 +126,9 @@ else:
 
                 sb1, sb2 = st.columns(2)
                 with sb1:
-                    save = st.form_submit_button("✓ Save", use_container_width=True)
+                    save = st.form_submit_button("✓ Save", width="stretch")
                 with sb2:
-                    cancel = st.form_submit_button("✕ Cancel", use_container_width=True)
+                    cancel = st.form_submit_button("✕ Cancel", width="stretch")
 
                 if save:
                     if not e_name.strip():
@@ -148,12 +148,12 @@ else:
             st.warning(f"Delete **{s['name']}**? This will also unassign them from any devices.")
             dc1, dc2 = st.columns(2)
             with dc1:
-                if st.button("✓ Yes, Delete", key=f"del_yes_{sid}", use_container_width=True, type="primary"):
+                if st.button("✓ Yes, Delete", key=f"del_yes_{sid}", width="stretch", type="primary"):
                     ers.delete_staff(sid)
                     st.session_state.delete_staff_id = None
                     st.rerun()
             with dc2:
-                if st.button("✕ Cancel", key=f"del_no_{sid}", use_container_width=True):
+                if st.button("✕ Cancel", key=f"del_no_{sid}", width="stretch"):
                     st.session_state.delete_staff_id = None
                     st.rerun()
 
@@ -176,12 +176,12 @@ else:
 
             col_edit, col_del, _ = st.columns([1, 1, 6])
             with col_edit:
-                if st.button("Edit", key=f"edit_{sid}", use_container_width=True):
+                if st.button("Edit", key=f"edit_{sid}", width="stretch"):
                     st.session_state.edit_staff_id   = sid
                     st.session_state.delete_staff_id = None
                     st.rerun()
             with col_del:
-                if st.button("Delete", key=f"delete_{sid}", use_container_width=True):
+                if st.button("Delete", key=f"delete_{sid}", width="stretch"):
                     st.session_state.delete_staff_id = sid
                     st.session_state.edit_staff_id   = None
                     st.rerun()

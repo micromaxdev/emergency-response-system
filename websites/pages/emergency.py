@@ -8,7 +8,7 @@ import socket, json, os, sys
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import ers_shared as ers
+import utils as ers
 
 st.set_page_config(page_title="ERS · Emergency Trigger", page_icon="🚨", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
@@ -83,7 +83,7 @@ if ers.alerts_active() and st.session_state.em_step != 3:
       </div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("⏹  STOP ALL ALERTS NOW", use_container_width=True, type="primary"):
+    if st.button("⏹  STOP ALL ALERTS NOW", width="stretch", type="primary"):
         ers.send_stop_command()
         st.rerun()
     st.markdown("---")
@@ -105,14 +105,14 @@ if st.session_state.em_step == 3:
         </div>
         """, unsafe_allow_html=True)
         if st.button("⏹  STOP ALL ALERTS — SILENCE RELAY & AUDIO",
-                     use_container_width=True, type="primary"):
+                     width="stretch", type="primary"):
             ers.send_stop_command()
             st.session_state.em_step   = 0
             st.session_state.em_result = None
             st.rerun()
     else:
         st.error(f"⚠ Failed to reach server: {st.session_state.em_result}")
-        if st.button("Reset", use_container_width=False):
+        if st.button("Reset", width="content"):
             st.session_state.em_step   = 0
             st.session_state.em_result = None
             st.rerun()
@@ -138,7 +138,7 @@ st.markdown("""
 # ── Step 0: Initial button ────────────────────────────────────────────────────
 if st.session_state.em_step == 0:
     st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Step 1 of 3 — Initiate</div>', unsafe_allow_html=True)
-    if st.button("🚨  TRIGGER MASS EMERGENCY", use_container_width=True, type="primary"):
+    if st.button("🚨  TRIGGER MASS EMERGENCY", width="stretch", type="primary"):
         st.session_state.em_step = 1
         st.rerun()
 
@@ -148,11 +148,11 @@ elif st.session_state.em_step == 1:
     st.warning("Are you sure? This will send real alerts to all configured staff members.")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("✓  YES — THIS IS A REAL EMERGENCY", use_container_width=True, type="primary"):
+        if st.button("✓  YES — THIS IS A REAL EMERGENCY", width="stretch", type="primary"):
             st.session_state.em_step = 2
             st.rerun()
     with c2:
-        if st.button("✕  CANCEL — DO NOT TRIGGER", use_container_width=True):
+        if st.button("✕  CANCEL — DO NOT TRIGGER", width="stretch"):
             st.session_state.em_step = 0
             st.rerun()
 
@@ -162,13 +162,13 @@ elif st.session_state.em_step == 2:
     st.error("⚠ FINAL WARNING — Pressing confirm will immediately activate audio, email, SMS and relay. This cannot be undone.")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🚨  CONFIRM — ACTIVATE ALL SYSTEMS NOW", use_container_width=True, type="primary"):
+        if st.button("🚨  CONFIRM — ACTIVATE ALL SYSTEMS NOW", width="stretch", type="primary"):
             status, err = trigger_real_mass()
             st.session_state.em_result = "ok" if status == "ok" else err
             st.session_state.em_step   = 3
             st.rerun()
     with c2:
-        if st.button("✕  CANCEL — STAND DOWN", use_container_width=True):
+        if st.button("✕  CANCEL — STAND DOWN", width="stretch"):
             st.session_state.em_step = 0
             st.rerun()
 

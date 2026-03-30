@@ -1,13 +1,17 @@
-import socket, json
+import socket
+import json
 from datetime import datetime
-import time as t
-import os, sys
+import os
+import sys
 import threading
 import queue
 import time
-import traceback   
+import traceback
 
-sys.path.append(os.path.expanduser("~/ers_server"))
+SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SERVER_DIR)
+
+sys.path.append(os.path.join(SERVER_DIR, "alert_handlers"))
 
 from email_alert import send_email_alert
 from sms_alert import send_sms_alert
@@ -19,28 +23,41 @@ COOLDOWN_SEC = 5
 
 HOST = "0.0.0.0"
 PORT = 8080
-LOG_FILE = os.path.expanduser("~/ers_server/emergency_log.jsonl")
+
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(LOG_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
+
+LOG_FILE = os.path.join(LOG_DIR, "emergency_log.jsonl")
+DB_PATH = os.path.join(DATA_DIR, "ers.sqlite")
+
 
 def log_event(event: dict):
     print(event)
-    with open(LOG_FILE, "a") as f:
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(event, ensure_ascii=False) + "\n")
 
 
 relay_queue = queue.Queue(maxsize=100)
 relay_i2c_lock = threading.Lock()
 
-def safe_relay_pulse(**kwargs): # Ensures only one relay action touches I2C at a time
+
+def safe_relay_pulse(**kwargs):
+    # Ensures only one relay action touches I2C at a time
     with relay_i2c_lock:
         relay_pulse(**kwargs)
+
 
 def safe_relay_off(ch=1):
     with relay_i2c_lock:
         relay_off(ch)
 
+
 def relay_worker():
     while True:
         job = relay_queue.get()
+        kwargs = {}
         try:
             fn = job["fn"]
             kwargs = job["kwargs"]
@@ -70,13 +87,15 @@ def relay_worker():
             })
             try:
                 safe_relay_off(kwargs.get("ch", 1))
-            except:
+            except Exception:
                 pass
         finally:
             relay_queue.task_done()
 
+
 def start_relay_thread():
     threading.Thread(target=relay_worker, daemon=True).start()
+
 
 def queue_mass_relay(device_id: str, on_sec: float = 120.0):
     """
@@ -99,10 +118,7 @@ def queue_mass_relay(device_id: str, on_sec: float = 120.0):
     })
 
 
-
 def handle_payload(payload: dict, addr):
-    import time
-
     device_id = payload.get("device_id") or payload.get("pico_id") or addr[0]
     em_flag = payload.get("emergency", False)
 
@@ -151,12 +167,24 @@ def handle_payload(payload: dict, addr):
     log_event(event)
 
     # Audio
-    log_event({"server_time": now_str, "type": "audio_play_start", "emergency_type": em_type})
+    log_event({
+        "server_time": now_str,
+        "type": "audio_play_start",
+        "emergency_type": em_type
+    })
     try:
         audio_res = play_audio_alert(event, block=False, min_interval_sec=0)
-        log_event({"server_time": now_str, "type": "audio_play_ok", "result": audio_res})
+        log_event({
+            "server_time": now_str,
+            "type": "audio_play_ok",
+            "result": audio_res
+        })
     except Exception as e:
-        log_event({"server_time": now_str, "type": "audio_play_failed", "error": str(e)})
+        log_event({
+            "server_time": now_str,
+            "type": "audio_play_failed",
+            "error": str(e)
+        })
 
     # Email
     log_event({
@@ -167,27 +195,58 @@ def handle_payload(payload: dict, addr):
     })
     try:
         send_email_alert(event)
-        log_event({"server_time": now_str, "type": "email_send_ok"})
+        log_event({
+            "server_time": now_str,
+            "type": "email_send_ok"
+        })
     except Exception as e:
-        log_event({"server_time": now_str, "type": "email_failed", "error": str(e)})
+        log_event({
+            "server_time": now_str,
+            "type": "email_failed",
+            "error": str(e)
+        })
 
     # SMS
-    log_event({"server_time": now_str, "type": "sms_send_start", "to": os.getenv("SMS_TO", "unset")})
+    log_event({
+        "server_time": now_str,
+        "type": "sms_send_start",
+        "to": os.getenv("SMS_TO", "unset")
+    })
     try:
         result = send_sms_alert(event)
-        log_event({"server_time": now_str, "type": "sms_send_ok", "result": result})
+        log_event({
+            "server_time": now_str,
+            "type": "sms_send_ok",
+            "result": result
+        })
     except Exception as e:
-        log_event({"server_time": now_str, "type": "sms_failed", "error": str(e)})
+        log_event({
+            "server_time": now_str,
+            "type": "sms_failed",
+            "error": str(e)
+        })
 
     # Relay
     if em_type == "mass":
         try:
-            queue_mass_relay(device_id=device_id, on_sec=120.0) 
-            log_event({"server_time": now_str, "type": "relay_queued", "channel": 1})
+            queue_mass_relay(device_id=device_id, on_sec=120.0)
+            log_event({
+                "server_time": now_str,
+                "type": "relay_queued",
+                "channel": 1
+            })
         except queue.Full:
-            log_event({"server_time": now_str, "type": "relay_queue_full", "channel": 1})
+            log_event({
+                "server_time": now_str,
+                "type": "relay_queue_full",
+                "channel": 1
+            })
     else:
-        log_event({"server_time": now_str, "type": "relay_skip", "reason": "personal"})
+        log_event({
+            "server_time": now_str,
+            "type": "relay_skip",
+            "reason": "personal"
+        })
 
 
 def client_thread(conn, addr):
@@ -210,12 +269,13 @@ def client_thread(conn, addr):
             "type": "server_error",
             "from_ip": addr[0],
             "from_port": addr[1],
-            "error": str(e)
+            "error": str(e),
+            "trace": traceback.format_exc()
         })
     finally:
         try:
             conn.close()
-        except:
+        except Exception:
             pass
 
 
@@ -231,7 +291,6 @@ def start_server():
 
     while True:
         conn, addr = s.accept()
-
         threading.Thread(target=client_thread, args=(conn, addr), daemon=True).start()
 
 

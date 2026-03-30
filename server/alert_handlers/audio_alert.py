@@ -18,7 +18,9 @@ def _find_project_root(start: Path) -> Path:
 
 # --- Project paths ---
 PROJECT_ROOT = _find_project_root(Path(__file__).parent)
-AUDIO_DIR = Path(os.getenv("ALERT_AUDIO_DIR", "/home/micromax/pico_dashboard/assets/audio")).expanduser()
+AUDIO_DIR = Path(
+    os.getenv("ALERT_AUDIO_DIR", str(PROJECT_ROOT / "assets" / "audio"))
+).expanduser()
 
 # --- Audio mapping ---
 AUDIO_MAP = {
@@ -48,6 +50,18 @@ def _pick_audio_file(event: Dict[str, Any], audio_file: Optional[str]) -> Path:
         return (AUDIO_DIR / AUDIO_MAP[em_type]).expanduser()
 
     return Path(DEFAULT_AUDIO).expanduser()
+    
+def get_audio_path(em_type: str):
+    em_type = (em_type or "").strip().lower()
+    if em_type in AUDIO_MAP:
+        p = (AUDIO_DIR / AUDIO_MAP[em_type]).expanduser()
+    else:
+        p = Path(DEFAULT_AUDIO).expanduser()
+
+    if not p.is_absolute():
+        p = (PROJECT_ROOT / p).resolve()
+
+    return p if p.exists() else None
 
 def _rate_limit(rl_state: Dict[str, float], key: str, min_interval_sec: float) -> bool:
     """

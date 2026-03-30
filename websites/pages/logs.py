@@ -8,7 +8,7 @@ import os, sys, csv, io
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import ers_shared as ers
+import utils as ers
 
 st.set_page_config(page_title="ERS · Logs", page_icon="📋", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
@@ -185,7 +185,7 @@ with st.sidebar:
         data=build_csv(export_rows),
         file_name=export_filename,
         mime="text/csv",
-        use_container_width=True,
+        width="stretch",
         disabled=(len(export_rows) == 0),
     )
 

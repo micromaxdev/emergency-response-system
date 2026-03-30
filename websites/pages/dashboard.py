@@ -7,7 +7,7 @@ import socket, json, os, sys
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import ers_shared as ers
+import utils as ers
 
 st.set_page_config(page_title="ERS · Dashboard", page_icon="📊", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
@@ -112,7 +112,7 @@ if ers.alerts_active():
     </div>
     """, unsafe_allow_html=True)
     if st.button("⏹  STOP ALL ALERTS — SILENCE RELAY & AUDIO",
-                 use_container_width=True, type="primary"):
+                 width="stretch", type="primary"):
         ers.send_stop_command()
         st.rerun()
 else:
@@ -162,12 +162,12 @@ col_drill, col_clear = st.columns([4, 1])
 with col_drill:
     if st.button("🔴  TRIGGER TEST DRILL  ·  Mass Emergency Simulation",
                  disabled=not st.session_state.drill_enabled,
-                 use_container_width=True, type="primary"):
+                 width="stretch", type="primary"):
         status, err = trigger_drill()
         st.session_state.drill_result = "ok" if status == "ok" else err
         st.rerun()
 with col_clear:
-    if st.button("Clear", use_container_width=True, key="clear_drill"):
+    if st.button("Clear", width="stretch", key="clear_drill"):
         st.session_state.drill_result = None
         st.rerun()
 if not st.session_state.drill_enabled:
@@ -202,20 +202,20 @@ if not st.session_state.purge_confirm:
         f"🗑  DELETE {purgeable} INCIDENT(S) OLDER THAN {ers.RETENTION_DAYS} DAYS"
         if purgeable > 0 else f"🗑  NO RECORDS OLDER THAN {ers.RETENTION_DAYS} DAYS"
     )
-    if st.button(btn_label, use_container_width=True, disabled=(purgeable == 0)):
+    if st.button(btn_label, width="stretch", disabled=(purgeable == 0)):
         st.session_state.purge_confirm = True
         st.rerun()
 else:
     st.warning(f"This will permanently delete **{purgeable} incident(s)** before `{cutoff_str}`. This cannot be undone.")
     col_yes, col_no = st.columns(2)
     with col_yes:
-        if st.button("✓  YES, DELETE PERMANENTLY", use_container_width=True, type="primary"):
+        if st.button("✓  YES, DELETE PERMANENTLY", width="stretch", type="primary"):
             deleted, cutoff = ers.purge_old_incidents(ers.RETENTION_DAYS)
             st.session_state.purge_result  = (deleted, cutoff)
             st.session_state.purge_confirm = False
             st.rerun()
     with col_no:
-        if st.button("✕  CANCEL", use_container_width=True):
+        if st.button("✕  CANCEL", width="stretch"):
             st.session_state.purge_confirm = False
             st.rerun()
 
