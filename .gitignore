@@ -206,3 +206,11 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 server/emergency_log.jsonl
+data/ers.sqlite
+logs/emergency_log.jsonl
+data/ers.sqlite
+logs/emergency_log.jsonl
+data/ers.sqlite
+data/*.sqlite
+logs/
+server/*.sqlite.bak
