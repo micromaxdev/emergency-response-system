@@ -28,7 +28,7 @@ st.set_page_config(page_title="ERS · Configuration", page_icon="⚙️", layout
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
-if "gw_coords" not in st.session_state: 
+if "gw_coords" not in st.session_state:
     st.session_state.gw_coords = ers.fetch_all_gw_coords()
 
 if "edit_device_id"   not in st.session_state: st.session_state.edit_device_id   = None
@@ -36,13 +36,14 @@ if "delete_device_id" not in st.session_state: st.session_state.delete_device_id
 if "device_saved"     not in st.session_state: st.session_state.device_saved     = False
 if "alert_saved"      not in st.session_state: st.session_state.alert_saved      = False
 if "audio_saved"      not in st.session_state: st.session_state.audio_saved      = False
+if "admin_saved"      not in st.session_state: st.session_state.admin_saved      = False
 
 with st.sidebar:
     st.markdown('<div class="ers-logo" style="font-size:1.8rem; letter-spacing:4px;">ERS</div>', unsafe_allow_html=True)
     st.markdown('<div class="ers-sub">CONFIGURATION</div>', unsafe_allow_html=True)
     st.markdown("---")
     st.caption("Sections:")
-    st.markdown("- Devices\n- Mass Alerts\n- Personal Alerts\n- Audio\n- Map & Gateways")
+    st.markdown("- Devices\n- Mass Alerts\n- Personal Alerts\n- Administration Alerts\n- Heartbeat Fail Alerts\n- Audio\n- Map & Gateways")
 
 st.markdown(ers.ers_header("Configuration"), unsafe_allow_html=True)
 
@@ -284,6 +285,157 @@ with pc2:
             st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════════
+#  5.5  ADMINISTRATION ALERTS
+#  Controls who receives system-level alerts (low battery + UPS events).
+#  Configured independently from emergency alert recipients.
+# ════════════════════════════════════════════════════════════════════════════════
+st.markdown("---")
+st.markdown('<div class="section-title">Administration Alerts</div>', unsafe_allow_html=True)
+
+st.markdown("""
+<div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#586069;
+            line-height:1.8;margin-bottom:20px;">
+  These alerts notify staff about system-level events — client device low battery,
+  UPS power status changes, and missed heartbeat / offline email and SMS alerts.
+  Recipients are managed separately from emergency alerts.
+</div>
+""", unsafe_allow_html=True)
+
+if st.session_state.admin_saved:
+    st.success("✓ Administration alert assignments updated.")
+    st.session_state.admin_saved = False
+
+admin_staff = ers.fetch_all_staff()
+
+if not admin_staff:
+    st.info("No staff found. Add staff on the Staff page first.")
+else:
+    # ── Battery Alerts (client devices + UPS) ────────────────────────────────
+    st.markdown("""
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
+                letter-spacing:2px;color:#586069;text-transform:uppercase;
+                margin:8px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
+      🔋 Battery Alerts — Client Devices &amp; UPS
+    </div>""", unsafe_allow_html=True)
+
+    bat1, bat2 = st.columns(2)
+
+    with bat1:
+        st.markdown('✉ Email — Battery Alerts')
+        with st.form("admin_bat_email_form"):
+            bat_email_states = {}
+            for s in admin_staff:
+                bat_email_states[s["id"]] = st.checkbox(
+                    f"{s['name']} ({s.get('role','—')})",
+                    value=bool(s.get("admin_email_low_battery")),
+                    key=f"bat_em_{s['id']}",
+                    disabled=not s.get("email"),
+                )
+            if st.form_submit_button("Save Email Recipients", use_container_width=True):
+                for s in admin_staff:
+                    ers.update_staff(
+                        s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
+                        bool(s.get("email_alerts_mass")), bool(s.get("email_alerts_personal")),
+                        bool(s.get("sms_alerts_mass")),   bool(s.get("sms_alerts_personal")),
+                        admin_email_low_battery=bat_email_states[s["id"]],
+                        admin_sms_low_battery=bool(s.get("admin_sms_low_battery")),
+                        admin_email_heartbeat_fail=bool(s.get("admin_email_heartbeat_fail")),
+                        admin_sms_heartbeat_fail=bool(s.get("admin_sms_heartbeat_fail")),
+                    )
+                st.session_state.admin_saved = True
+                st.rerun()
+
+    with bat2:
+        st.markdown('📱 SMS — Battery Alerts')
+        with st.form("admin_bat_sms_form"):
+            bat_sms_states = {}
+            for s in admin_staff:
+                bat_sms_states[s["id"]] = st.checkbox(
+                    f"{s['name']} ({s.get('role','—')})",
+                    value=bool(s.get("admin_sms_low_battery")),
+                    key=f"bat_sms_{s['id']}",
+                    disabled=not s.get("phone"),
+                )
+            if st.form_submit_button("Save SMS Recipients", use_container_width=True):
+                for s in admin_staff:
+                    ers.update_staff(
+                        s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
+                        bool(s.get("email_alerts_mass")), bool(s.get("email_alerts_personal")),
+                        bool(s.get("sms_alerts_mass")),   bool(s.get("sms_alerts_personal")),
+                        admin_sms_low_battery=bat_sms_states[s["id"]],
+                        admin_email_low_battery=bool(s.get("admin_email_low_battery")),
+                        admin_email_heartbeat_fail=bool(s.get("admin_email_heartbeat_fail")),
+                        admin_sms_heartbeat_fail=bool(s.get("admin_sms_heartbeat_fail")),
+                    )
+                st.session_state.admin_saved = True
+                st.rerun()
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Heartbeat Fail Alerts
+# Uses dedicated flags so heartbeat-fail recipients can be managed separately
+# from personal emergency and battery/UPS alerts.
+# ───────────────────────────────────────────────────────────────────────────────
+    st.markdown("""
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
+                letter-spacing:2px;color:#586069;text-transform:uppercase;
+                margin:24px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
+      ❤️ Heartbeat Fail Alerts
+    </div>""", unsafe_allow_html=True)
+
+    hb1, hb2 = st.columns(2)
+
+    with hb1:
+        st.markdown('✉ Email — Heartbeat Fail')
+        with st.form("admin_hb_email_form"):
+            hb_email_states = {}
+            for s in admin_staff:
+                hb_email_states[s["id"]] = st.checkbox(
+                    f"{s['name']} ({s.get('role','—')})",
+                    value=bool(s.get("admin_email_heartbeat_fail")),
+                    key=f"hb_em_{s['id']}",
+                    disabled=not s.get("email"),
+                )
+            if st.form_submit_button("Save Email Recipients", use_container_width=True):
+                for s in admin_staff:
+                    ers.update_staff(
+                        s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
+                        bool(s.get("email_alerts_mass")), bool(s.get("email_alerts_personal")),
+                        bool(s.get("sms_alerts_mass")),   bool(s.get("sms_alerts_personal")),
+                        admin_email_low_battery=bool(s.get("admin_email_low_battery")),
+                        admin_sms_low_battery=bool(s.get("admin_sms_low_battery")),
+                        admin_email_heartbeat_fail=hb_email_states[s["id"]],
+                        admin_sms_heartbeat_fail=bool(s.get("admin_sms_heartbeat_fail")),
+                    )
+                st.session_state.admin_saved = True
+                st.rerun()
+
+    with hb2:
+        st.markdown('📱 SMS — Heartbeat Fail')
+        with st.form("admin_hb_sms_form"):
+            hb_sms_states = {}
+            for s in admin_staff:
+                hb_sms_states[s["id"]] = st.checkbox(
+                    f"{s['name']} ({s.get('role','—')})",
+                    value=bool(s.get("admin_sms_heartbeat_fail")),
+                    key=f"hb_sms_{s['id']}",
+                    disabled=not s.get("phone"),
+                )
+            if st.form_submit_button("Save SMS Recipients", use_container_width=True):
+                for s in admin_staff:
+                    ers.update_staff(
+                        s["id"], s["name"], s.get("role",""), s.get("email",""), s.get("phone",""),
+                        bool(s.get("email_alerts_mass")), bool(s.get("email_alerts_personal")),
+                        bool(s.get("sms_alerts_mass")),   bool(s.get("sms_alerts_personal")),
+                        admin_email_low_battery=bool(s.get("admin_email_low_battery")),
+                        admin_sms_low_battery=bool(s.get("admin_sms_low_battery")),
+                        admin_email_heartbeat_fail=bool(s.get("admin_email_heartbeat_fail")),
+                        admin_sms_heartbeat_fail=hb_sms_states[s["id"]],
+                    )
+                st.session_state.admin_saved = True
+                st.rerun()
+
+# ════════════════════════════════════════════════════════════════════════════════
 #  6. AUDIO SETTINGS — Corrected Paths
 # ════════════════════════════════════════════════════════════════════════════════
 st.markdown("---")
@@ -352,8 +504,8 @@ with col_map1:
         st.rerun()
 
     new_scale = st.number_input(
-        "Office Actual Width (Meters)", 
-        min_value=1.0, 
+        "Office Actual Width (Meters)",
+        min_value=1.0,
         value=float(st.session_state.map_meters_wide),
         step=0.5
     )
@@ -364,7 +516,7 @@ with col_map1:
 
     st.write("---")
     st.markdown("### 2. Manage Gateways")
-    
+   
     with st.expander("➕ Add New Gateway"):
         cadd1, cadd2 = st.columns([3, 1])
         new_name = cadd1.text_input("Gateway Name", key="new_gw_name")
@@ -384,7 +536,7 @@ with col_map1:
             ny = cy.number_input("Y (m)", value=float(pos['y']), key=f"y_{gw_id}")
             is_del = cdel.checkbox("🗑️", key=f"del_{gw_id}")
             temp_changes[gw_id] = "DELETE" if is_del else {"x": nx, "y": ny}
-        
+       
         if st.form_submit_button("💾 Save All Changes", use_container_width=True):
             for gid, action in temp_changes.items():
                 if action == "DELETE":
@@ -397,17 +549,17 @@ with col_map1:
 with col_map2:
     st.markdown("### 3. Map Preview")
     map_img_path = os.path.join(ers.MAP_DIR, "company_map.png")
-    
+   
     if os.path.exists(map_img_path):
         img = Image.open(map_img_path)
         w, h = img.size
         scale = w / st.session_state.map_meters_wide
-        
+       
         fig = px.imshow(img)
-        
+       
         for gw, pos in current_gws.items():
             fig.add_scatter(
-                x=[float(pos['x']) * scale], 
+                x=[float(pos['x']) * scale],
                 y=[float(pos['y']) * scale],
                 mode="markers+text",
                 text=[f"<b>{gw}</b>"],
@@ -415,7 +567,7 @@ with col_map2:
                 marker=dict(color="#e74c3c", size=15, symbol="octagon", line=dict(width=2, color="white")),
                 name=gw
             )
-        
+       
         fig.update_layout(
             showlegend=False,
             margin=dict(l=0, r=0, t=0, b=0),
@@ -431,6 +583,8 @@ st.markdown("---")
 st.markdown('<div class="section-title">Current Assignment Summary</div>', unsafe_allow_html=True)
 
 final_staff = ers.fetch_all_staff()
+
+st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin-bottom:10px;">Emergency Alerts</div>', unsafe_allow_html=True)
 sc1, sc2, sc3, sc4 = st.columns(4)
 groups = [
     (sc1, "✉ Email · Mass",     "email_alerts_mass",     "email"),
@@ -439,6 +593,21 @@ groups = [
     (sc4, "📱 SMS · Personal",   "sms_alerts_personal",   "phone"),
 ]
 for col, label, flag, field in groups:
+    with col:
+        members = [s for s in final_staff if s.get(flag)]
+        st.markdown(f'<div class="mono" style="font-size:0.6rem; letter-spacing:1px;">{label} ({len(members)})</div>', unsafe_allow_html=True)
+        for s in members:
+            st.markdown(f'<div style="font-size:0.75rem; border-bottom:1px solid #f0f0f0; padding:2px 0;">{s["name"]}</div>', unsafe_allow_html=True)
+
+st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin:18px 0 10px 0;">Administration Alerts</div>', unsafe_allow_html=True)
+ad1, ad2, ad3, ad4 = st.columns(4)
+admin_groups = [
+    (ad1, "🔋 Email · Battery",   "admin_email_low_battery"),
+    (ad2, "🔋 SMS · Battery",     "admin_sms_low_battery"),
+    (ad3, "❤️ Email · Heartbeat Fail", "admin_email_heartbeat_fail"),
+    (ad4, "❤️ SMS · Heartbeat Fail", "admin_sms_heartbeat_fail"),
+]
+for col, label, flag in admin_groups:
     with col:
         members = [s for s in final_staff if s.get(flag)]
         st.markdown(f'<div class="mono" style="font-size:0.6rem; letter-spacing:1px;">{label} ({len(members)})</div>', unsafe_allow_html=True)

@@ -1,37 +1,40 @@
 """
 utils.py — shared config, CSS, and DB helpers for every ERS page.
 Centrally managed paths for the new project structure.
-Full version with all original logic preserved.
 """
 
 import sqlite3
 import socket
 import os
 import sys
+import json
 from datetime import datetime, timedelta
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  PATH CALCULATIONS 
+#  PATH CALCULATIONS
 # ════════════════════════════════════════════════════════════════════════════════
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR    = os.path.dirname(CURRENT_DIR)
 
-DB_PATH     = os.path.join(ROOT_DIR, "data", "ers.sqlite")
-MAP_DIR     = os.path.join(ROOT_DIR, "assets", "maps")
-AUDIO_DIR   = os.path.join(ROOT_DIR, "assets", "audios")
+DB_PATH = os.path.join(ROOT_DIR, "data", "ers.sqlite")
+HEARTBEAT_LOG_FILE = os.path.join(ROOT_DIR, "logs", "heartbeat_log.jsonl")
+OFFLINE_TIMEOUT_S = 90
+
+MAP_DIR   = os.path.join(ROOT_DIR, "assets", "maps")
+AUDIO_DIR = os.path.join(ROOT_DIR, "assets", "audios")
 
 os.makedirs(MAP_DIR, exist_ok=True)
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  CONFIG 
+#  CONFIG
 # ════════════════════════════════════════════════════════════════════════════════
 SERVER_HOST    = "127.0.0.1"
-SERVER_PORT    = 8080
+SERVER_PORT    = 8081
 DRILL_DEVICE   = "DASHBOARD_DRILL"
 DRILL_SOURCE   = "test_drill"
 REFRESH_SEC    = 5
-RETENTION_DAYS = 30 
+RETENTION_DAYS = 30
 
 def autorefresh():
     """Call once per page after set_page_config to enable auto-refresh."""
@@ -39,7 +42,7 @@ def autorefresh():
     st_autorefresh(interval=REFRESH_SEC * 1000, key="ers_autorefresh")
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  SHARED CSS 
+#  SHARED CSS
 # ════════════════════════════════════════════════════════════════════════════════
 ERS_CSS = """
 <style>
@@ -241,18 +244,110 @@ def init_extra_tables():
             assigned_staff_id INTEGER, created_at TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (assigned_staff_id) REFERENCES staff(id)
         );""")
+        for col in (
+            "admin_email_low_battery",
+            "admin_sms_low_battery",
+            "admin_email_ups",
+            "admin_sms_ups",
+            "admin_email_heartbeat_fail",
+            "admin_sms_heartbeat_fail",
+        ):
+            try:
+                conn.execute(f"ALTER TABLE staff ADD COLUMN {col} INTEGER DEFAULT 0")
+            except sqlite3.OperationalError:
+                pass
         conn.commit()
     finally:
         conn.close()
 
 def fetch_incidents(limit=200):
     conn = db_connect()
-    if not conn: return []
+    if not conn:
+        return []
     try:
-        rows = conn.execute("SELECT * FROM incidents ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        rows = conn.execute(
+            "SELECT * FROM incidents ORDER BY id DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
         return [dict(r) for r in rows]
     finally:
         conn.close()
+
+def get_device_comm_status(device_id: str, timeout_s: int = OFFLINE_TIMEOUT_S):
+    """
+    Determine whether a device is ONLINE or OFFLINE based on the latest
+    heartbeat_received entry in heartbeat_log.jsonl.
+    """
+    if not os.path.exists(HEARTBEAT_LOG_FILE):
+        return {
+            "state": "unknown",
+            "label": "UNKNOWN",
+            "last_seen": None,
+            "detail": "Heartbeat log not found"
+        }
+
+    latest_ts = None
+
+    try:
+        with open(HEARTBEAT_LOG_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except Exception:
+                    continue
+
+                if row.get("type") != "heartbeat_received":
+                    continue
+                if row.get("device_id") != device_id:
+                    continue
+
+                ts_str = row.get("server_time")
+                if not ts_str:
+                    continue
+
+                try:
+                    ts = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    continue
+
+                if latest_ts is None or ts > latest_ts:
+                    latest_ts = ts
+
+        if latest_ts is None:
+            return {
+                "state": "unknown",
+                "label": "UNKNOWN",
+                "last_seen": None,
+                "detail": f"No heartbeat found for {device_id}"
+            }
+
+        age = (datetime.now() - latest_ts).total_seconds()
+
+        if age <= timeout_s:
+            return {
+                "state": "online",
+                "label": "ONLINE",
+                "last_seen": latest_ts.strftime("%Y-%m-%d %H:%M:%S"),
+                "detail": f"Last heartbeat {int(age)}s ago"
+            }
+        else:
+            return {
+                "state": "offline",
+                "label": "OFFLINE",
+                "last_seen": latest_ts.strftime("%Y-%m-%d %H:%M:%S"),
+                "detail": f"No heartbeat for {int(age)}s"
+            }
+
+    except Exception as e:
+        return {
+            "state": "unknown",
+            "label": "UNKNOWN",
+            "last_seen": None,
+            "detail": str(e)
+        }
 
 def fetch_counts():
     conn = db_connect()
@@ -330,11 +425,60 @@ def add_staff(name, role, email, phone, email_alerts_mass=False, email_alerts_pe
     finally:
         conn.close()
 
-def update_staff(staff_id, name, role, email, phone, email_alerts_mass, email_alerts_personal, sms_alerts_mass, sms_alerts_personal):
+def update_staff(staff_id, name, role, email, phone,
+                 email_alerts_mass, email_alerts_personal,
+                 sms_alerts_mass, sms_alerts_personal,
+                 admin_email_low_battery=None,
+                 admin_sms_low_battery=None,
+                 admin_email_ups=None,
+                 admin_sms_ups=None,
+                 admin_email_heartbeat_fail=None,
+                 admin_sms_heartbeat_fail=None):
+    """Update a staff record. Admin alert fields default to None which means
+    'keep the current value in the DB' so existing forms don't accidentally
+    reset flags they are not responsible for."""
     conn = db_connect()
     try:
-        conn.execute("UPDATE staff SET name=?, role=?, email=?, phone=?, email_alerts_mass=?, email_alerts_personal=?, sms_alerts_mass=?, sms_alerts_personal=? WHERE id=?",
-            (name, role, email, phone, int(email_alerts_mass), int(email_alerts_personal), int(sms_alerts_mass), int(sms_alerts_personal), staff_id))
+        if any(x is None for x in [admin_email_low_battery, admin_sms_low_battery,
+                                   admin_email_ups, admin_sms_ups,
+                                   admin_email_heartbeat_fail, admin_sms_heartbeat_fail]):
+            row = conn.execute(
+                "SELECT admin_email_low_battery, admin_sms_low_battery, "
+                "admin_email_ups, admin_sms_ups, "
+                "admin_email_heartbeat_fail, admin_sms_heartbeat_fail FROM staff WHERE id=?",
+                (staff_id,)
+            ).fetchone()
+            if row:
+                if admin_email_low_battery is None: admin_email_low_battery = row[0] or 0
+                if admin_sms_low_battery   is None: admin_sms_low_battery   = row[1] or 0
+                if admin_email_ups         is None: admin_email_ups         = row[2] or 0
+                if admin_sms_ups           is None: admin_sms_ups           = row[3] or 0
+                if admin_email_heartbeat_fail     is None: admin_email_heartbeat_fail     = row[4] or 0
+                if admin_sms_heartbeat_fail       is None: admin_sms_heartbeat_fail       = row[5] or 0
+            else:
+                admin_email_low_battery = admin_email_low_battery or 0
+                admin_sms_low_battery   = admin_sms_low_battery   or 0
+                admin_email_ups         = admin_email_ups         or 0
+                admin_sms_ups           = admin_sms_ups           or 0
+                admin_email_heartbeat_fail     = admin_email_heartbeat_fail     or 0
+                admin_sms_heartbeat_fail       = admin_sms_heartbeat_fail       or 0
+
+        conn.execute(
+            "UPDATE staff SET name=?, role=?, email=?, phone=?, "
+            "email_alerts_mass=?, email_alerts_personal=?, "
+            "sms_alerts_mass=?, sms_alerts_personal=?, "
+            "admin_email_low_battery=?, admin_sms_low_battery=?, "
+            "admin_email_ups=?, admin_sms_ups=?, "
+            "admin_email_heartbeat_fail=?, admin_sms_heartbeat_fail=? "
+            "WHERE id=?",
+            (name, role, email, phone,
+             int(email_alerts_mass), int(email_alerts_personal),
+             int(sms_alerts_mass), int(sms_alerts_personal),
+             int(admin_email_low_battery), int(admin_sms_low_battery),
+             int(admin_email_ups), int(admin_sms_ups),
+             int(admin_email_heartbeat_fail), int(admin_sms_heartbeat_fail),
+             staff_id)
+        )
         conn.commit()
     finally:
         conn.close()
@@ -416,7 +560,10 @@ def get_system_status():
     FAILURE = {"failed", "queue_full"}
     try:
         conn = db_connect()
-        rows = [dict(r) for r in conn.execute(f"SELECT audio_status, email_status, sms_status, relay_status FROM incidents WHERE trigger_source != '{DRILL_SOURCE}' ORDER BY id DESC LIMIT 10").fetchall()]
+        rows = [dict(r) for r in conn.execute(
+            f"SELECT audio_status, email_status, sms_status, relay_status "
+            f"FROM incidents WHERE trigger_source != '{DRILL_SOURCE}' ORDER BY id DESC LIMIT 10"
+        ).fetchall()]
         conn.close()
         for key in ("audio", "email", "sms", "relay"):
             col = f"{key}_status"
@@ -427,7 +574,8 @@ def get_system_status():
             fails = sum(1 for v in values if v in FAILURE)
             status[key] = ("ok", "All OK") if fails == 0 else ("warn", f"{fails} fails")
     except:
-        for key in ("audio", "email", "sms", "relay"): status[key] = ("error", "Check logs")
+        for key in ("audio", "email", "sms", "relay"):
+            status[key] = ("error", "Check logs")
 
     return status
 
@@ -440,7 +588,8 @@ def get_control(key: str) -> str:
         row = conn.execute("SELECT value FROM system_control WHERE key=?", (key,)).fetchone()
         conn.close()
         return row[0] if row else "0"
-    except: return "0"
+    except:
+        return "0"
 
 def set_control(key: str, value: str):
     conn = sqlite3.connect(DB_PATH)
@@ -455,6 +604,64 @@ def alerts_active() -> bool:
     """Return True if relay or audio is currently running."""
     return get_control("relay_active") == "1" or get_control("audio_active") == "1"
 
+def get_admin_email_recipients(alert_type: str) -> list:
+    col = f"admin_email_{alert_type}"
+    try:
+        conn = db_connect()
+        if not conn:
+            return []
+        rows = conn.execute(
+            f"SELECT email FROM staff WHERE {col}=1 AND email!='' AND email IS NOT NULL"
+        ).fetchall()
+        conn.close()
+        return [r[0].strip() for r in rows if r[0] and r[0].strip()]
+    except Exception:
+        return []
+
+def get_admin_sms_recipients(alert_type: str) -> str:
+    col = f"admin_sms_{alert_type}"
+    try:
+        conn = db_connect()
+        if not conn:
+            return ""
+        rows = conn.execute(
+            f"SELECT phone FROM staff WHERE {col}=1 AND phone!='' AND phone IS NOT NULL"
+        ).fetchall()
+        conn.close()
+        phones = [r[0].strip() for r in rows if r[0] and r[0].strip()]
+        return ",".join(phones)
+    except Exception:
+        return ""
+
+def get_admin_offline_email_recipients() -> list:
+    col = "admin_email_heartbeat_fail"
+    try:
+        conn = db_connect()
+        if not conn:
+            return []
+        rows = conn.execute(
+            f"SELECT email FROM staff WHERE {col}=1 AND email!='' AND email IS NOT NULL"
+        ).fetchall()
+        conn.close()
+        return [r[0].strip() for r in rows if r[0] and r[0].strip()]
+    except Exception:
+        return []
+
+def get_admin_offline_sms_recipients() -> str:
+    col = "admin_sms_heartbeat_fail"
+    try:
+        conn = db_connect()
+        if not conn:
+            return ""
+        rows = conn.execute(
+            f"SELECT phone FROM staff WHERE {col}=1 AND phone!='' AND phone IS NOT NULL"
+        ).fetchall()
+        conn.close()
+        phones = [r[0].strip() for r in rows if r[0] and r[0].strip()]
+        return ",".join(phones)
+    except Exception:
+        return ""
+
 def send_stop_command():
     """
     Write stop flags to the DB AND send a TCP command to the server so it
@@ -462,13 +669,29 @@ def send_stop_command():
     """
     set_control("relay_active", "0")
     set_control("audio_active", "0")
-    # Best-effort TCP nudge — server handles {"command":"stop_alerts"}
     try:
         import socket as _socket, json as _json
         with _socket.create_connection((SERVER_HOST, SERVER_PORT), timeout=3) as s:
             s.sendall(_json.dumps({"command": "stop_alerts"}).encode())
     except Exception:
-        pass  # DB flags are sufficient; TCP is just for immediacy
+        pass
+
+def send_ack_offline_alert(device_id: str, ack_by: str = "admin"):
+    """
+    Send an acknowledge command to the ERS server so it stops
+    repeating offline alerts for the given device.
+    """
+    try:
+        import socket as _socket, json as _json
+        with _socket.create_connection((SERVER_HOST, SERVER_PORT), timeout=3) as s:
+            s.sendall(_json.dumps({
+                "command": "ack_offline_alert",
+                "device_id": device_id,
+                "ack_by": ack_by,
+            }).encode())
+        return True, ""
+    except Exception as e:
+        return False, str(e)
 
 # ── UI Helpers ────────────────────────────────────────────────────────────────
 
@@ -482,16 +705,20 @@ def status_pill(state, text):
     return f'<span class="pill {cls}">{icon} {text}</span>'
 
 def type_badge(em_type, src):
-    if src == DRILL_SOURCE: return '<span class="badge badge-drill">DRILL</span>'
-    if em_type == "mass": return '<span class="badge badge-mass">MASS</span>'
+    if src == DRILL_SOURCE:
+        return '<span class="badge badge-drill">DRILL</span>'
+    if em_type == "mass":
+        return '<span class="badge badge-mass">MASS</span>'
     return '<span class="badge badge-personal">PERSONAL</span>'
 
 def dot_cls(em_type, src):
-    if src == DRILL_SOURCE: return "dot-drill"
+    if src == DRILL_SOURCE:
+        return "dot-drill"
     return "dot-mass" if em_type == "mass" else "dot-personal"
 
 def row_cls(em_type, src):
-    if src == DRILL_SOURCE: return "is-drill"
+    if src == DRILL_SOURCE:
+        return "is-drill"
     return "is-mass" if em_type == "mass" else ""
 
 def ers_header(subtitle=""):
@@ -501,6 +728,33 @@ def ers_header(subtitle=""):
       {"<div class='ers-sub'>" + subtitle + "</div>" if subtitle else ""}
     </div>
     """
+
+# ════════════════════════════════════════════════════════════════════════════════
+#  CLIENT DEVICE BATTERIES
+# ════════════════════════════════════════════════════════════════════════════════
+
+def fetch_all_device_batteries():
+    conn = db_connect()
+    if not conn:
+        return []
+    try:
+        rows = conn.execute("""
+            SELECT b.device_id,
+                   b.battery_pct,
+                   b.battery_v,
+                   b.updated_at,
+                   COALESCE(d.label, b.device_id) AS label,
+                   s.name AS staff_name
+            FROM device_battery b
+            LEFT JOIN devices d ON d.device_id = b.device_id
+            LEFT JOIN staff  s ON s.id = d.assigned_staff_id
+            ORDER BY b.device_id ASC
+        """).fetchall()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
+    finally:
+        conn.close()
 
 # ════════════════════════════════════════════════════════════════════════════════
 #  SYSTEM MEMORY — MAP & GATEWAYS
@@ -541,11 +795,14 @@ def fetch_all_gw_coords():
     conn = db_connect()
     try:
         rows = conn.execute("SELECT * FROM map_config").fetchall()
-        if not rows: return {}
+        if not rows:
+            return {}
         return {row['key']: {"x": row['val_x'], "y": row['val_y']} for row in rows}
-    except: return {}
+    except:
+        return {}
     finally:
-        if conn: conn.close()
+        if conn:
+            conn.close()
 
 def save_map_scale(meters_wide):
     set_control("map_meters_wide", str(meters_wide))

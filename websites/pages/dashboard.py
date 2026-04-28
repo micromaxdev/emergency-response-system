@@ -1,5 +1,5 @@
 """
-pages/1_Dashboard.py — Live incident dashboard, system status, test drill, retention.
+pages/dashboard.py — Live incident dashboard, system status, test drill, retention.
 """
 
 import streamlit as st
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
 
-st.set_page_config(page_title="ERS · Dashboard", page_icon="📊", layout="wide")
+st.set_page_config(page_title="ERS · Dashboard", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -17,21 +17,25 @@ if os.path.exists(ers.DB_PATH):
     ers.init_extra_tables()
 
 # ── Session state ─────────────────────────────────────────────────────────────
-if "drill_enabled" not in st.session_state: st.session_state.drill_enabled = True
-if "drill_result"  not in st.session_state: st.session_state.drill_result  = None
-if "purge_confirm" not in st.session_state: st.session_state.purge_confirm = False
-if "purge_result"  not in st.session_state: st.session_state.purge_result  = None
+if "drill_enabled" not in st.session_state:
+    st.session_state.drill_enabled = True
+if "drill_result" not in st.session_state:
+    st.session_state.drill_result = None
+if "purge_confirm" not in st.session_state:
+    st.session_state.purge_confirm = False
+if "purge_result" not in st.session_state:
+    st.session_state.purge_result = None
 
 # ── TCP drill ─────────────────────────────────────────────────────────────────
 def trigger_drill():
     payload = {
-        "emergency":         True,
-        "emergency_type":    "drill",
-        "trigger_source":    ers.DRILL_SOURCE,
-        "device_id":         ers.DRILL_DEVICE,
+        "emergency": True,
+        "emergency_type": "drill",
+        "trigger_source": ers.DRILL_SOURCE,
+        "device_id": ers.DRILL_DEVICE,
         "emergency_message": "TEST DRILL — Simulated Mass Emergency",
-        "timestamp":         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "drill":             True,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "drill": True,
     }
     try:
         with socket.create_connection((ers.SERVER_HOST, ers.SERVER_PORT), timeout=5) as s:
@@ -46,20 +50,36 @@ def trigger_drill():
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown('<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:3px;margin-bottom:20px;">DASHBOARD</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:3px;margin-bottom:20px;">DASHBOARD</div>',
+        unsafe_allow_html=True
+    )
     st.markdown("---")
 
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Drill Controls</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Drill Controls</div>',
+        unsafe_allow_html=True
+    )
     drill_toggle = st.toggle("Test Drill Enabled", value=st.session_state.drill_enabled)
     st.session_state.drill_enabled = drill_toggle
     if not drill_toggle:
-        st.warning("Test drills are **disabled**.", icon="🔒")
+        st.warning("Test drills are **disabled**.")
 
     st.markdown("---")
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Display</div>', unsafe_allow_html=True)
-    type_filter  = st.multiselect("Show Types", ["mass", "personal", "test_drill"], default=["mass", "personal", "test_drill"])
-    limit        = st.slider("Max Rows", 20, 500, 100, step=20)
+    st.markdown(
+        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Display</div>',
+        unsafe_allow_html=True
+    )
+    type_filter = st.multiselect(
+        "Show Types",
+        ["mass", "personal", "test_drill"],
+        default=["mass", "personal", "test_drill"]
+    )
+    limit = st.slider("Max Rows", 20, 500, 100, step=20)
 
     st.markdown("---")
     st.caption(f"Retention: `{ers.RETENTION_DAYS} days`")
@@ -100,7 +120,7 @@ if ers.alerts_active():
     <div style="background:rgba(230,57,70,0.1);border:2px solid #e63946;
                 border-radius:8px;padding:20px 24px;margin-bottom:24px;
                 display:flex;align-items:center;gap:16px;">
-      <div style="font-size:1.8rem;">🚨</div>
+      <div style="font-size:1.8rem;"></div>
       <div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;
                     letter-spacing:4px;color:#e63946;">ALERT SYSTEMS ACTIVE</div>
@@ -111,8 +131,12 @@ if ers.alerts_active():
       </div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("⏹  STOP ALL ALERTS — SILENCE RELAY & AUDIO",
-                 width="stretch", type="primary"):
+    if st.button(
+        "STOP ALL ALERTS — SILENCE RELAY & AUDIO",
+        width="stretch",
+        type="primary",
+        key="stop_all_alerts_main"
+    ):
         ers.send_stop_command()
         st.rerun()
 else:
@@ -129,9 +153,14 @@ else:
 st.markdown('<div class="section-title">System Status</div>', unsafe_allow_html=True)
 sys_status = ers.get_system_status()
 STATUS_CARDS = [
-    ("server", "ERS Server"), ("db", "Database"), ("last_incident", "Last Incident"),
-    ("audio", "Audio"), ("email", "Email"), ("sms", "SMS"),
-    ("relay", "Relay"), ("retention", f"Retention ({ers.RETENTION_DAYS}d)"),
+    ("server", "ERS Server"),
+    ("db", "Database"),
+    ("last_incident", "Last Incident"),
+    ("audio", "Audio"),
+    ("email", "Email"),
+    ("sms", "SMS"),
+    ("relay", "Relay"),
+    ("retention", f"Retention ({ers.RETENTION_DAYS}d)"),
 ]
 cards_html = '<div class="status-grid">'
 for key, label in STATUS_CARDS:
@@ -144,6 +173,74 @@ for key, label in STATUS_CARDS:
     </div>"""
 cards_html += "</div>"
 st.markdown(cards_html, unsafe_allow_html=True)
+st.markdown("---")
+
+# Device Communication Status
+st.markdown('<div class="section-title">Device Communication Status</div>', unsafe_allow_html=True)
+
+TARGET_DEVICE_ID = "PICO_TEST_01"
+ACK_BY = "Skylar Li"
+comm = ers.get_device_comm_status(TARGET_DEVICE_ID)
+
+if comm["state"] == "online":
+    box_bg = "rgba(46,196,182,0.10)"
+    box_border = "rgba(46,196,182,0.45)"
+    text_color = "#2ec4b6"
+elif comm["state"] == "offline":
+    box_bg = "rgba(230,57,70,0.10)"
+    box_border = "rgba(230,57,70,0.45)"
+    text_color = "#e63946"
+else:
+    box_bg = "rgba(247,183,49,0.10)"
+    box_border = "rgba(247,183,49,0.45)"
+    text_color = "#f7b731"
+
+st.markdown(f"""
+<div style="background:{box_bg};
+            border:1px solid {box_border};
+            border-left:6px solid {text_color};
+            border-radius:8px;
+            padding:18px 20px;
+            margin-bottom:20px;">
+  <div style="font-family:'Bebas Neue',sans-serif;
+              font-size:1.3rem;
+              letter-spacing:3px;
+              color:{text_color};">
+    {comm["label"]}
+  </div>
+  <div style="font-family:'IBM Plex Mono',monospace;
+              font-size:0.72rem;
+              color:#111;
+              margin-top:6px;">
+    Device: <strong>{TARGET_DEVICE_ID}</strong>
+  </div>
+  <div style="font-family:'IBM Plex Mono',monospace;
+              font-size:0.68rem;
+              color:#586069;
+              margin-top:6px;">
+    {comm["detail"]}
+  </div>
+  <div style="font-family:'IBM Plex Mono',monospace;
+              font-size:0.68rem;
+              color:#586069;
+              margin-top:4px;">
+    Last seen: {comm["last_seen"] or "—"}
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+if comm["state"] == "offline":
+    if st.button(
+        f"ACKNOWLEDGE OFFLINE ALERT · {TARGET_DEVICE_ID}",
+        width="stretch",
+        key=f"ack_offline_{TARGET_DEVICE_ID}"
+    ):
+        ok, err = ers.send_ack_offline_alert(TARGET_DEVICE_ID, ACK_BY)
+        if ok:
+            st.success(f"Offline alert for {TARGET_DEVICE_ID} acknowledged by {ACK_BY}.")
+        else:
+            st.error(f"Failed to acknowledge offline alert: {err}")
+
 st.markdown("---")
 
 # Test Drill
@@ -160,9 +257,13 @@ elif st.session_state.drill_result:
 
 col_drill, col_clear = st.columns([4, 1])
 with col_drill:
-    if st.button("🔴  TRIGGER TEST DRILL  ·  Mass Emergency Simulation",
-                 disabled=not st.session_state.drill_enabled,
-                 width="stretch", type="primary"):
+    if st.button(
+        "TRIGGER TEST DRILL  ·  Mass Emergency Simulation",
+        disabled=not st.session_state.drill_enabled,
+        width="stretch",
+        type="primary",
+        key="trigger_test_drill"
+    ):
         status, err = trigger_drill()
         st.session_state.drill_result = "ok" if status == "ok" else err
         st.rerun()
@@ -170,8 +271,9 @@ with col_clear:
     if st.button("Clear", width="stretch", key="clear_drill"):
         st.session_state.drill_result = None
         st.rerun()
+
 if not st.session_state.drill_enabled:
-    st.caption("🔒 Enable drills via the sidebar toggle.")
+    st.caption("Enable drills via the sidebar toggle.")
 
 st.markdown("---")
 
@@ -199,23 +301,33 @@ if st.session_state.purge_result:
 
 if not st.session_state.purge_confirm:
     btn_label = (
-        f"🗑  DELETE {purgeable} INCIDENT(S) OLDER THAN {ers.RETENTION_DAYS} DAYS"
-        if purgeable > 0 else f"🗑  NO RECORDS OLDER THAN {ers.RETENTION_DAYS} DAYS"
+        f"DELETE {purgeable} INCIDENT(S) OLDER THAN {ers.RETENTION_DAYS} DAYS"
+        if purgeable > 0 else f"NO RECORDS OLDER THAN {ers.RETENTION_DAYS} DAYS"
     )
-    if st.button(btn_label, width="stretch", disabled=(purgeable == 0)):
+    if st.button(
+        btn_label,
+        width="stretch",
+        disabled=(purgeable == 0),
+        key="purge_old_incidents"
+    ):
         st.session_state.purge_confirm = True
         st.rerun()
 else:
     st.warning(f"This will permanently delete **{purgeable} incident(s)** before `{cutoff_str}`. This cannot be undone.")
     col_yes, col_no = st.columns(2)
     with col_yes:
-        if st.button("✓  YES, DELETE PERMANENTLY", width="stretch", type="primary"):
+        if st.button(
+            "✓  YES, DELETE PERMANENTLY",
+            width="stretch",
+            type="primary",
+            key="confirm_delete_old_incidents"
+        ):
             deleted, cutoff = ers.purge_old_incidents(ers.RETENTION_DAYS)
-            st.session_state.purge_result  = (deleted, cutoff)
+            st.session_state.purge_result = (deleted, cutoff)
             st.session_state.purge_confirm = False
             st.rerun()
     with col_no:
-        if st.button("✕  CANCEL", width="stretch"):
+        if st.button("✕  CANCEL", width="stretch", key="cancel_delete_old_incidents"):
             st.session_state.purge_confirm = False
             st.rerun()
 
@@ -227,7 +339,10 @@ all_incidents = ers.fetch_incidents(limit=limit)
 filtered = [i for i in all_incidents if ers.passes_filter(i, type_filter)]
 
 if not filtered:
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.75rem;color:#586069;padding:20px 0;">No incidents match the current filters.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.75rem;color:#586069;padding:20px 0;">No incidents match the current filters.</div>',
+        unsafe_allow_html=True
+    )
 else:
     st.markdown("""
     <div class="tbl-header">
@@ -243,14 +358,14 @@ else:
     </div>""", unsafe_allow_html=True)
 
     for inc in filtered:
-        em        = inc.get("emergency_type", "")
-        src       = inc.get("trigger_source", "")
+        em = inc.get("emergency_type", "")
+        src = inc.get("trigger_source", "")
         device_id = inc.get("device_id") or inc.get("from_ip") or ""
-        label     = ers.get_device_label(device_id)
+        label = ers.get_device_label(device_id)
         dev_display = label or device_id or "—"
-        if len(dev_display) > 22: dev_display = dev_display[:21] + "…"
+        if len(dev_display) > 22:
+            dev_display = dev_display[:21] + "…"
 
-        # Read stored snapshot — never affected by reassignment
         tb = inc.get("triggered_by")
         if tb:
             triggered_by = f'<span style="font-size:0.78rem;font-weight:600;">{tb}</span>'
@@ -262,13 +377,14 @@ else:
             triggered_by = '<span style="font-size:0.75rem;color:#586069;">— unassigned</span>'
 
         msg = (inc.get("message") or "—")[:50]
-        ts  = (inc.get("server_time") or "—")[:16]
+        ts = (inc.get("server_time") or "—")[:16]
         alerts = (
-            ers.pill(inc.get("audio_status"), f"🔊 {inc.get('audio_status') or '—'}") + " " +
+            ers.pill(inc.get("audio_status"), f"{inc.get('audio_status') or '—'}") + " " +
             ers.pill(inc.get("email_status"), f"✉ {inc.get('email_status') or '—'}") + " " +
-            ers.pill(inc.get("sms_status"),   f"📱 {inc.get('sms_status') or '—'}")
+            ers.pill(inc.get("sms_status"), f"{inc.get('sms_status') or '—'}")
         )
         relay = ers.pill(inc.get("relay_status"), f"⚡ {inc.get('relay_status') or '—'}")
+
         st.markdown(f"""
         <div class="inc-row {ers.row_cls(em, src)}">
           <span class="status-dot {ers.dot_cls(em, src)}"></span>
