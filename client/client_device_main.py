@@ -122,8 +122,8 @@ class INA219:
 #  USER CONFIG
 # ================================================================
 
-WIFI_SSID = "2KF2197U00607-BFW"
-WIFI_PASS = "MmxLetsUIn2014"
+WIFI_SSID = "wifi ssid"
+WIFI_PASS = "wifi pass"
 
 PI5_IP   = "192.168.115.49"
 PI5_PORT = 8081
