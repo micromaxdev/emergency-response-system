@@ -12,10 +12,10 @@ import socket
 import ujson
 
 # ---------------- User config ----------------
-WIFI_SSID = "add wifi ssid"
-WIFI_PASS = "add wifi pass"
+WIFI_SSID = "2KF2197U00607-BFW"
+WIFI_PASS = "MmxLetsUIn2014"
 
-PI5_IP   = "add pi5 IP"
+PI5_IP   = "192.168.115.49"
 PI5_PORT = 8080
 
 DEVICE_ID = "PICO_TEST_01"
