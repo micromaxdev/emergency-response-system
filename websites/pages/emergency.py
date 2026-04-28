@@ -76,14 +76,14 @@ if ers.alerts_active() and st.session_state.em_step != 3:
                 border-radius:8px;padding:20px 24px;margin-bottom:24px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;
                   letter-spacing:4px;color:#e63946;margin-bottom:6px;">
-        🚨 ALERT SYSTEMS CURRENTLY ACTIVE
+        ALERT SYSTEMS CURRENTLY ACTIVE
       </div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#586069;">
         Relay and/or audio are running. Stop them before triggering a new emergency.
       </div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("⏹  STOP ALL ALERTS NOW", width="stretch", type="primary"):
+    if st.button("STOP ALL ALERTS NOW", width="stretch", type="primary"):
         ers.send_stop_command()
         st.rerun()
     st.markdown("---")
@@ -96,7 +96,7 @@ if st.session_state.em_step == 3:
                     border-radius:8px;padding:32px;text-align:center;margin-bottom:32px;">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;
                       letter-spacing:6px;color:#e63946;margin-bottom:12px;">
-            🚨 MASS EMERGENCY ACTIVE
+            MASS EMERGENCY ACTIVE
           </div>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:#586069;">
             All alert systems have been activated.<br>
@@ -104,7 +104,7 @@ if st.session_state.em_step == 3:
           </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("⏹  STOP ALL ALERTS — SILENCE RELAY & AUDIO",
+        if st.button("STOP ALL ALERTS — SILENCE RELAY & AUDIO",
                      width="stretch", type="primary"):
             ers.send_stop_command()
             st.session_state.em_step   = 0
@@ -138,7 +138,7 @@ st.markdown("""
 # ── Step 0: Initial button ────────────────────────────────────────────────────
 if st.session_state.em_step == 0:
     st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Step 1 of 3 — Initiate</div>', unsafe_allow_html=True)
-    if st.button("🚨  TRIGGER MASS EMERGENCY", width="stretch", type="primary"):
+    if st.button("TRIGGER MASS EMERGENCY", width="stretch", type="primary"):
         st.session_state.em_step = 1
         st.rerun()
 
@@ -162,7 +162,7 @@ elif st.session_state.em_step == 2:
     st.error("⚠ FINAL WARNING — Pressing confirm will immediately activate audio, email, SMS and relay. This cannot be undone.")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🚨  CONFIRM — ACTIVATE ALL SYSTEMS NOW", width="stretch", type="primary"):
+        if st.button("CONFIRM — ACTIVATE ALL SYSTEMS NOW", width="stretch", type="primary"):
             status, err = trigger_real_mass()
             st.session_state.em_result = "ok" if status == "ok" else err
             st.session_state.em_step   = 3
