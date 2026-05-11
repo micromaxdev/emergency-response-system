@@ -9,7 +9,7 @@ import time
 import traceback
 import sqlite3
 
-# -- Project paths ------------------------------------------------------------
+# ── Project paths ─────────────────────────────────────────────────────────────
 SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SERVER_DIR)
 ALERT_HANDLERS_DIR = os.path.join(SERVER_DIR, "alert_handlers")
@@ -27,16 +27,7 @@ from sms_alert import send_sms_alert
 from audio_alert import play_audio_alert, AUDIO_DIR, AUDIO_MAP, get_audio_path
 from relay_alert import relay_on, relay_off
 
-try:
-    from trilateration import estimate_location_from_rssi, calculate_distance_error
-    TRILATERATION_AVAILABLE = True
-except Exception as e:
-    estimate_location_from_rssi = None
-    calculate_distance_error = None
-    TRILATERATION_AVAILABLE = False
-    TRILATERATION_IMPORT_ERROR = str(e)
-
-# -- Config --------------------------------------------------------------------
+# ── Config ────────────────────────────────────────────────────────────────────
 LAST_SENT = {}
 COOLDOWN_SEC = 5
 
@@ -46,7 +37,7 @@ PORT = 8081
 LOG_FILE = os.path.join(LOG_DIR, "emergency_log.jsonl")
 DB_PATH = os.path.join(DATA_DIR, "ers.sqlite")
 
-# -- Thread state --------------------------------------------------------------
+# ── Thread state ──────────────────────────────────────────────────────────────
 relay_i2c_lock = threading.Lock()
 _relay_thread_running = False
 _audio_thread_running = False
@@ -54,13 +45,13 @@ _audio_proc = None
 _audio_proc_lock = threading.Lock()
 _thread_lock = threading.Lock()
 
-# -- JSONL logger --------------------------------------------------------------
+# ── JSONL logger ──────────────────────────────────────────────────────────────
 def log_event(event: dict):
     print(event)
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(event, ensure_ascii=False) + "\n")
 
-# -- DB setup ------------------------------------------------------------------
+# ── DB setup ──────────────────────────────────────────────────────────────────
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     try:
@@ -89,7 +80,6 @@ def init_db():
           raw_json         TEXT
         );
         """)
-
         try:
             conn.execute("ALTER TABLE incidents ADD COLUMN triggered_by TEXT")
         except sqlite3.OperationalError:
@@ -109,7 +99,6 @@ def init_db():
             created_at            TEXT DEFAULT (datetime('now'))
         );
         """)
-
         for col in (
             "email_alerts_mass",
             "email_alerts_personal",
@@ -140,18 +129,6 @@ def init_db():
         );
         """)
 
-        conn.execute("""
-        CREATE TABLE IF NOT EXISTS room_zones (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            room_name TEXT NOT NULL,
-            x_min REAL NOT NULL,
-            y_min REAL NOT NULL,
-            x_max REAL NOT NULL,
-            y_max REAL NOT NULL,
-            created_at TEXT DEFAULT (datetime('now'))
-        );
-        """)
-
         conn.execute(
             "INSERT OR REPLACE INTO system_control (key,value) VALUES ('relay_active','0')"
         )
@@ -163,7 +140,7 @@ def init_db():
     finally:
         conn.close()
 
-# -- system_control helpers ----------------------------------------------------
+# ── system_control helpers ────────────────────────────────────────────────────
 def get_control(key: str) -> str:
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -192,7 +169,7 @@ def set_control(key: str, value: str):
             "error": str(e),
         })
 
-# -- DB incident helpers -------------------------------------------------------
+# ── DB incident helpers ───────────────────────────────────────────────────────
 def insert_incident(row: dict):
     conn = sqlite3.connect(DB_PATH)
     try:
@@ -231,7 +208,7 @@ def insert_incident(row: dict):
     finally:
         conn.close()
 
-# -- Alert recipient helpers ---------------------------------------------------
+# ── Alert recipient helpers ───────────────────────────────────────────────────
 def get_email_recipients(em_type: str) -> list:
     col = "email_alerts_mass" if em_type == "mass" else "email_alerts_personal"
     try:
@@ -288,7 +265,7 @@ def get_triggered_by(device_id: str):
         })
         return None
 
-# -- Relay loop ----------------------------------------------------------------
+# ── Relay loop ────────────────────────────────────────────────────────────────
 def _relay_loop():
     global _relay_thread_running
     log_event({
@@ -333,7 +310,7 @@ def start_relay_loop():
     set_control("relay_active", "1")
     threading.Thread(target=_relay_loop, daemon=True).start()
 
-# -- Audio loop ----------------------------------------------------------------
+# ── Audio loop ────────────────────────────────────────────────────────────────
 def _audio_loop(em_type: str):
     global _audio_thread_running, _audio_proc
 
@@ -426,7 +403,7 @@ def start_audio_loop(em_type: str = "mass"):
     set_control("audio_active", "1")
     threading.Thread(target=_audio_loop, args=(em_type,), daemon=True).start()
 
-# -- Stop all alerts -----------------------------------------------------------
+# ── Stop all alerts ───────────────────────────────────────────────────────────
 def stop_all_alerts():
     set_control("relay_active", "0")
     set_control("audio_active", "0")
@@ -435,129 +412,7 @@ def stop_all_alerts():
         "type": "stop_all_alerts_requested",
     })
 
-# -- Room lookup helper --------------------------------------------------------
-def lookup_room_by_xy(x, y):
-    """
-    Look up readable room name from room_zones table using estimated x,y metres.
-    Returns room_name or None.
-    """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-
-        rows = conn.execute("""
-            SELECT room_name, x_min, y_min, x_max, y_max
-            FROM room_zones
-        """).fetchall()
-
-        conn.close()
-
-        for row in rows:
-            x_min = min(float(row["x_min"]), float(row["x_max"]))
-            x_max = max(float(row["x_min"]), float(row["x_max"]))
-            y_min = min(float(row["y_min"]), float(row["y_max"]))
-            y_max = max(float(row["y_min"]), float(row["y_max"]))
-
-            if x_min <= float(x) <= x_max and y_min <= float(y) <= y_max:
-                return row["room_name"]
-
-        return None
-
-    except Exception as e:
-        log_event({
-            "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "type": "room_lookup_failed",
-            "error": str(e),
-        })
-        return None
-
-# -- Location / Trilateration helper ------------------------------------------
-def safe_estimate_location(payload: dict, now_str: str):
-    """
-    Safely estimate device location from RSSI gateway data.
-
-    Expected payload format:
-    {
-        "gateways": [
-            {"gateway_id": "GW1", "x": 0.0, "y": 0.0, "rssi": -73},
-            {"gateway_id": "GW2", "x": 10.0, "y": 0.0, "rssi": -75},
-            {"gateway_id": "GW3", "x": 0.0, "y": 10.0, "rssi": -79}
-        ],
-        "measured_power": -59,
-        "path_loss_exponent": 2.0,
-        "map_width": 10.0,
-        "map_height": 10.0
-    }
-
-    Returns:
-        location result dict or None
-    """
-
-    if not TRILATERATION_AVAILABLE:
-        log_event({
-            "server_time": now_str,
-            "type": "trilateration_unavailable",
-            "error": globals().get("TRILATERATION_IMPORT_ERROR", "unknown import error"),
-        })
-        return None
-
-    gateways = payload.get("gateways")
-
-    if not gateways:
-        return None
-
-    if not isinstance(gateways, list) or len(gateways) < 3:
-        log_event({
-            "server_time": now_str,
-            "type": "location_skipped",
-            "reason": "At least 3 gateways are required.",
-            "gateways_received": gateways,
-        })
-        return None
-
-    try:
-        measured_power = payload.get("measured_power", -59)
-        path_loss_exponent = payload.get("path_loss_exponent", 2.0)
-        map_width = payload.get("map_width")
-        map_height = payload.get("map_height")
-
-        location = estimate_location_from_rssi(
-            gateways,
-            measured_power=measured_power,
-            path_loss_exponent=path_loss_exponent,
-            map_width=map_width,
-            map_height=map_height,
-        )
-
-        errors = calculate_distance_error(
-            location["x"],
-            location["y"],
-            location["gateways_used"]
-        )
-
-        location["distance_errors"] = errors
-
-        log_event({
-            "server_time": now_str,
-            "type": "location_estimated",
-            "x": location["x"],
-            "y": location["y"],
-            "gateways_used": location["gateways_used"],
-            "distance_errors": errors,
-        })
-
-        return location
-
-    except Exception as e:
-        log_event({
-            "server_time": now_str,
-            "type": "location_estimation_failed",
-            "error": str(e),
-            "trace": traceback.format_exc(),
-        })
-        return None
-
-# -- Core handler --------------------------------------------------------------
+# ── Core handler ──────────────────────────────────────────────────────────────
 def handle_payload(payload: dict, addr):
     device_id = payload.get("device_id") or payload.get("pico_id") or addr[0]
     em_flag = payload.get("emergency", False)
@@ -610,40 +465,6 @@ def handle_payload(payload: dict, addr):
         "raw": payload,
     }
 
-    # Optional location estimation block.
-    # This will only run if payload contains "gateways".
-    location = safe_estimate_location(payload, now_str)
-
-    if location is not None:
-        room_name = lookup_room_by_xy(location["x"], location["y"])
-        readable_room = room_name or "Unknown area"
-
-        event["estimated_location"] = {
-            "x": location["x"],
-            "y": location["y"],
-            "room_name": readable_room,
-            "gateways_used": location["gateways_used"],
-            "distance_errors": location.get("distance_errors", []),
-        }
-
-        event["room_name"] = readable_room
-
-        payload_with_location = dict(payload)
-        payload_with_location["estimated_location"] = event["estimated_location"]
-        payload_with_location["room_name"] = readable_room
-
-        log_event({
-            "server_time": now_str,
-            "type": "room_estimated",
-            "device_id": device_id,
-            "x": location["x"],
-            "y": location["y"],
-            "room_name": readable_room,
-        })
-
-    else:
-        payload_with_location = payload
-
     log_event(event)
 
     incident = {
@@ -656,7 +477,7 @@ def handle_payload(payload: dict, addr):
         "from_ip": addr[0],
         "from_port": addr[1],
         "pico_ts": ts,
-        "raw_json": json.dumps(payload_with_location, ensure_ascii=False),
+        "raw_json": json.dumps(payload, ensure_ascii=False),
     }
 
     if em_type != "personal":
@@ -761,7 +582,7 @@ def handle_payload(payload: dict, addr):
             "error": str(e),
         })
 
-# -- TCP server ----------------------------------------------------------------
+# ── TCP server ────────────────────────────────────────────────────────────────
 def client_thread(conn, addr):
     try:
         data = conn.recv(4096)

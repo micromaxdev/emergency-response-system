@@ -1,5 +1,5 @@
 """
-websites/pages/configuration.py — Device, Alert, Audio and Map Management.
+websites/pages/configuration.py � Device, Alert, Audio and Map Management.
 Full version with no omissions. Centrally managed via utils.py (ers).
 """
 
@@ -7,10 +7,11 @@ import streamlit as st
 import os, sys
 import plotly.express as px
 from PIL import Image
+from streamlit_image_coordinates import streamlit_image_coordinates
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  1. PATH & MODULE IMPORT — Connect to utils.py
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  1. PATH & MODULE IMPORT � Connect to utils.py
+# --------------------------------------------------------------------------------
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 if PARENT_DIR not in sys.path:
@@ -18,13 +19,15 @@ if PARENT_DIR not in sys.path:
 
 import utils as ers  
 ers.init_map_table()
+ers.init_room_zones_table()
+
 if os.path.exists(ers.DB_PATH):
     ers.init_extra_tables()
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  2. PAGE SETUP & SESSION STATE
-# ════════════════════════════════════════════════════════════════════════════════
-st.set_page_config(page_title="ERS · Configuration", page_icon="⚙️", layout="wide")
+# --------------------------------------------------------------------------------
+st.set_page_config(page_title="ERS � Configuration", page_icon="??", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -37,6 +40,8 @@ if "device_saved"     not in st.session_state: st.session_state.device_saved    
 if "alert_saved"      not in st.session_state: st.session_state.alert_saved      = False
 if "audio_saved"      not in st.session_state: st.session_state.audio_saved      = False
 if "admin_saved"      not in st.session_state: st.session_state.admin_saved      = False
+if "room_corner_1"    not in st.session_state: st.session_state.room_corner_1    = None
+if "room_corner_2"    not in st.session_state: st.session_state.room_corner_2    = None
 
 with st.sidebar:
     st.markdown('<div class="ers-logo" style="font-size:1.8rem; letter-spacing:4px;">ERS</div>', unsafe_allow_html=True)
@@ -48,23 +53,23 @@ with st.sidebar:
 st.markdown(ers.ers_header("Configuration"), unsafe_allow_html=True)
 
 if not os.path.exists(ers.DB_PATH):
-    st.error(f"⚠ Database not found at `{ers.DB_PATH}`. Ensure data/ers.sqlite exists.")
+    st.error(f"? Database not found at `{ers.DB_PATH}`. Ensure data/ers.sqlite exists.")
     st.stop()
 
 all_staff = ers.fetch_all_staff()
-staff_options           = {s["id"]: f"{s['name']} ({s.get('role','—')})" for s in all_staff}
-staff_options_with_none = {None: "— Unassigned —", **staff_options}
+staff_options           = {s["id"]: f"{s['name']} ({s.get('role','�')})" for s in all_staff}
+staff_options_with_none = {None: "� Unassigned �", **staff_options}
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  3. DEVICE MANAGEMENT
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 st.markdown('<div class="section-title">Device Management</div>', unsafe_allow_html=True)
 
 if st.session_state.device_saved:
-    st.success("✓ Device configuration saved.")
+    st.success("? Device configuration saved.")
     st.session_state.device_saved = False
 
-with st.expander("➕  Register New Device", expanded=False):
+with st.expander("?  Register New Device", expanded=False):
     unregistered = ers.fetch_known_device_ids()
     with st.form("add_device_form"):
         c1, c2 = st.columns(2)
@@ -80,7 +85,7 @@ with st.expander("➕  Register New Device", expanded=False):
             manual_id = st.text_input("Device ID (manual)", placeholder="e.g. pico_room3")
         with c2:
             new_label    = st.text_input("Friendly Label", placeholder="e.g. Room 3 Panic Button")
-            new_location = st.text_input("Location",       placeholder="e.g. Building A · Floor 2")
+            new_location = st.text_input("Location",       placeholder="e.g. Building A � Floor 2")
 
         assigned_id = st.selectbox(
             "Assign to Staff Member",
@@ -130,38 +135,38 @@ else:
                     )
                 sb1, sb2 = st.columns(2)
                 with sb1:
-                    if st.form_submit_button("✓ Save", use_container_width=True):
+                    if st.form_submit_button("? Save", use_container_width=True):
                         ers.update_device(did, e_label.strip(), e_location.strip(), e_assigned)
                         st.session_state.edit_device_id = None
                         st.session_state.device_saved   = True
                         st.rerun()
                 with sb2:
-                    if st.form_submit_button("✕ Cancel", use_container_width=True):
+                    if st.form_submit_button("? Cancel", use_container_width=True):
                         st.session_state.edit_device_id = None
                         st.rerun()
         elif st.session_state.delete_device_id == did:
             st.warning(f"Remove device **{d['device_id']}**? Incident history is kept.")
             dc1, dc2 = st.columns(2)
             with dc1:
-                if st.button("✓ Yes, Remove", key=f"devdel_yes_{did}", use_container_width=True, type="primary"):
+                if st.button("? Yes, Remove", key=f"devdel_yes_{did}", use_container_width=True, type="primary"):
                     ers.delete_device(did)
                     st.session_state.delete_device_id = None
                     st.rerun()
             with dc2:
-                if st.button("✕ Cancel", key=f"devdel_no_{did}", use_container_width=True):
+                if st.button("? Cancel", key=f"devdel_no_{did}", use_container_width=True):
                     st.session_state.delete_device_id = None
                     st.rerun()
         else:
             assign_pill = (
-                f'<span class="pill pill-ok">👤 {d["staff_name"]}</span>'
+                f'<span class="pill pill-ok">?? {d["staff_name"]}</span>'
                 if d.get("assigned_staff_id")
-                else '<span class="pill pill-unknown">— unassigned</span>'
+                else '<span class="pill pill-unknown">� unassigned</span>'
             )
             st.markdown(f"""
             <div class="inc-row">
               <span style="min-width:160px; font-family:IBM Plex Mono,monospace;">{d['device_id']}</span>
-              <span style="min-width:160px; font-weight:600;">{d.get('label') or '—'}</span>
-              <span style="flex:1; color:#586069;">{d.get('location') or '—'}</span>
+              <span style="min-width:160px; font-weight:600;">{d.get('label') or '�'}</span>
+              <span style="flex:1; color:#586069;">{d.get('location') or '�'}</span>
               <span style="min-width:180px">{assign_pill}</span>
             </div>""", unsafe_allow_html=True)
 
@@ -175,14 +180,14 @@ else:
                     st.session_state.delete_device_id = did
                     st.rerun()
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  4. ALERT RECIPIENTS — MASS EMERGENCY
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  4. ALERT RECIPIENTS � MASS EMERGENCY
+# --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Mass Emergency Alert Recipients</div>', unsafe_allow_html=True)
 
 if st.session_state.alert_saved:
-    st.success("✓ Alert assignments updated.")
+    st.success("? Alert assignments updated.")
     st.session_state.alert_saved = False
 
 if not all_staff:
@@ -192,12 +197,12 @@ else:
     mc1, mc2 = st.columns(2)
 
     with mc1:
-        st.markdown('✉ Email — Mass Emergency')
+        st.markdown('? Email � Mass Emergency')
         with st.form("mass_email_form"):
             mass_email_states = {}
             for s in fresh:
                 mass_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})",
+                    f"{s['name']} ({s.get('role','�')})",
                     value=bool(s.get("email_alerts_mass")),
                     key=f"me_{s['id']}",
                     disabled=not s.get("email"),
@@ -213,12 +218,12 @@ else:
                 st.rerun()
 
     with mc2:
-        st.markdown('📱 SMS — Mass Emergency')
+        st.markdown('?? SMS � Mass Emergency')
         with st.form("mass_sms_form"):
             mass_sms_states = {}
             for s in fresh:
                 mass_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})",
+                    f"{s['name']} ({s.get('role','�')})",
                     value=bool(s.get("sms_alerts_mass")),
                     key=f"ms_{s['id']}",
                     disabled=not s.get("phone"),
@@ -233,9 +238,9 @@ else:
                 st.session_state.alert_saved = True
                 st.rerun()
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  5. ALERT RECIPIENTS — PERSONAL EMERGENCY
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  5. ALERT RECIPIENTS � PERSONAL EMERGENCY
+# --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Personal Emergency Alert Recipients</div>', unsafe_allow_html=True)
 
@@ -243,12 +248,12 @@ fresh2 = ers.fetch_all_staff()
 pc1, pc2 = st.columns(2)
 
 with pc1:
-    st.markdown('✉ Email — Personal Emergency')
+    st.markdown('? Email � Personal Emergency')
     with st.form("personal_email_form"):
         pers_email_states = {}
         for s in fresh2:
             pers_email_states[s["id"]] = st.checkbox(
-                f"{s['name']} ({s.get('role','—')})",
+                f"{s['name']} ({s.get('role','�')})",
                 value=bool(s.get("email_alerts_personal")),
                 key=f"pe_{s['id']}",
                 disabled=not s.get("email"),
@@ -264,12 +269,12 @@ with pc1:
             st.rerun()
 
 with pc2:
-    st.markdown('📱 SMS — Personal Emergency')
+    st.markdown('?? SMS � Personal Emergency')
     with st.form("personal_sms_form"):
         pers_sms_states = {}
         for s in fresh2:
             pers_sms_states[s["id"]] = st.checkbox(
-                f"{s['name']} ({s.get('role','—')})",
+                f"{s['name']} ({s.get('role','�')})",
                 value=bool(s.get("sms_alerts_personal")),
                 key=f"ps_{s['id']}",
                 disabled=not s.get("phone"),
@@ -284,25 +289,25 @@ with pc2:
             st.session_state.alert_saved = True
             st.rerun()
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  5.5  ADMINISTRATION ALERTS
 #  Controls who receives system-level alerts (low battery + UPS events).
 #  Configured independently from emergency alert recipients.
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Administration Alerts</div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#586069;
             line-height:1.8;margin-bottom:20px;">
-  These alerts notify staff about system-level events — client device low battery,
+  These alerts notify staff about system-level events � client device low battery,
   UPS power status changes, and missed heartbeat / offline email and SMS alerts.
   Recipients are managed separately from emergency alerts.
 </div>
 """, unsafe_allow_html=True)
 
 if st.session_state.admin_saved:
-    st.success("✓ Administration alert assignments updated.")
+    st.success("? Administration alert assignments updated.")
     st.session_state.admin_saved = False
 
 admin_staff = ers.fetch_all_staff()
@@ -310,23 +315,23 @@ admin_staff = ers.fetch_all_staff()
 if not admin_staff:
     st.info("No staff found. Add staff on the Staff page first.")
 else:
-    # ── Battery Alerts (client devices + UPS) ────────────────────────────────
+    # -- Battery Alerts (client devices + UPS) --------------------------------
     st.markdown("""
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
                 letter-spacing:2px;color:#586069;text-transform:uppercase;
                 margin:8px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
-      🔋 Battery Alerts — Client Devices &amp; UPS
+      ?? Battery Alerts � Client Devices &amp; UPS
     </div>""", unsafe_allow_html=True)
 
     bat1, bat2 = st.columns(2)
 
     with bat1:
-        st.markdown('✉ Email — Battery Alerts')
+        st.markdown('? Email � Battery Alerts')
         with st.form("admin_bat_email_form"):
             bat_email_states = {}
             for s in admin_staff:
                 bat_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})",
+                    f"{s['name']} ({s.get('role','�')})",
                     value=bool(s.get("admin_email_low_battery")),
                     key=f"bat_em_{s['id']}",
                     disabled=not s.get("email"),
@@ -346,12 +351,12 @@ else:
                 st.rerun()
 
     with bat2:
-        st.markdown('📱 SMS — Battery Alerts')
+        st.markdown('?? SMS � Battery Alerts')
         with st.form("admin_bat_sms_form"):
             bat_sms_states = {}
             for s in admin_staff:
                 bat_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})",
+                    f"{s['name']} ({s.get('role','�')})",
                     value=bool(s.get("admin_sms_low_battery")),
                     key=f"bat_sms_{s['id']}",
                     disabled=not s.get("phone"),
@@ -371,27 +376,27 @@ else:
                 st.rerun()
 
 
-# ───────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------------
 # Heartbeat Fail Alerts
 # Uses dedicated flags so heartbeat-fail recipients can be managed separately
 # from personal emergency and battery/UPS alerts.
-# ───────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------------
     st.markdown("""
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
                 letter-spacing:2px;color:#586069;text-transform:uppercase;
                 margin:24px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
-      ❤️ Heartbeat Fail Alerts
+      ?? Heartbeat Fail Alerts
     </div>""", unsafe_allow_html=True)
 
     hb1, hb2 = st.columns(2)
 
     with hb1:
-        st.markdown('✉ Email — Heartbeat Fail')
+        st.markdown('? Email � Heartbeat Fail')
         with st.form("admin_hb_email_form"):
             hb_email_states = {}
             for s in admin_staff:
                 hb_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})",
+                    f"{s['name']} ({s.get('role','�')})",
                     value=bool(s.get("admin_email_heartbeat_fail")),
                     key=f"hb_em_{s['id']}",
                     disabled=not s.get("email"),
@@ -411,12 +416,12 @@ else:
                 st.rerun()
 
     with hb2:
-        st.markdown('📱 SMS — Heartbeat Fail')
+        st.markdown('?? SMS � Heartbeat Fail')
         with st.form("admin_hb_sms_form"):
             hb_sms_states = {}
             for s in admin_staff:
                 hb_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','—')})",
+                    f"{s['name']} ({s.get('role','�')})",
                     value=bool(s.get("admin_sms_heartbeat_fail")),
                     key=f"hb_sms_{s['id']}",
                     disabled=not s.get("phone"),
@@ -435,22 +440,22 @@ else:
                 st.session_state.admin_saved = True
                 st.rerun()
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  6. AUDIO SETTINGS — Corrected Paths
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  6. AUDIO SETTINGS � Corrected Paths
+# --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Alert Audio Files</div>', unsafe_allow_html=True)
 
 AUDIO_DIR = ers.AUDIO_DIR
 
 if st.session_state.audio_saved:
-    st.success(f"✓ Audio files saved to {AUDIO_DIR}")
+    st.success(f"? Audio files saved to {AUDIO_DIR}")
     st.session_state.audio_saved = False
 
 ac1, ac2 = st.columns(2)
 
 with ac1:
-    st.markdown('**🔔 Test / Drill Alert Audio**')
+    st.markdown('**?? Test / Drill Alert Audio**')
     test_audio = st.file_uploader("Upload test audio", type=["mp3", "wav", "ogg"], key="test_up")
     existing_test = next((f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("test_alert_")), None)
     if test_audio:
@@ -459,7 +464,7 @@ with ac1:
         st.audio(os.path.join(AUDIO_DIR, existing_test))
 
 with ac2:
-    st.markdown('**🚨 Mass Emergency Alert Audio**')
+    st.markdown('**?? Mass Emergency Alert Audio**')
     emergency_audio = st.file_uploader("Upload mass emergency audio", type=["mp3", "wav", "ogg"], key="em_up")
     existing_em = next((f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("emergency_alert_")), None)
     if emergency_audio:
@@ -467,7 +472,7 @@ with ac2:
     elif existing_em:
         st.audio(os.path.join(AUDIO_DIR, existing_em))
 
-if st.button("💾 Save Audio Files", use_container_width=True):
+if st.button("?? Save Audio Files", use_container_width=True):
     if test_audio:
         for f in os.listdir(AUDIO_DIR):
             if f.startswith("test_alert_"): os.remove(os.path.join(AUDIO_DIR, f))
@@ -481,9 +486,9 @@ if st.button("💾 Save Audio Files", use_container_width=True):
     st.session_state.audio_saved = True
     st.rerun()
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  7. MAP & GATEWAY CONFIGURATION — Dynamic Upgrade
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  7. MAP & GATEWAY CONFIGURATION � Dynamic Upgrade
+# --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Dynamic Map & Gateway Setup</div>', unsafe_allow_html=True)
 
@@ -500,7 +505,7 @@ with col_map1:
         save_path = os.path.join(ers.MAP_DIR, "company_map.png")
         with open(save_path, "wb") as f:
             f.write(uploaded_map.getbuffer())
-        st.success("✓ Map saved!")
+        st.success("? Map saved!")
         st.rerun()
 
     new_scale = st.number_input(
@@ -517,7 +522,7 @@ with col_map1:
     st.write("---")
     st.markdown("### 2. Manage Gateways")
    
-    with st.expander("➕ Add New Gateway"):
+    with st.expander("? Add New Gateway"):
         cadd1, cadd2 = st.columns([3, 1])
         new_name = cadd1.text_input("Gateway Name", key="new_gw_name")
         if cadd2.button("Add"):
@@ -530,14 +535,14 @@ with col_map1:
     with st.form("gw_dynamic_form"):
         temp_changes = {}
         for gw_id, pos in current_gws.items():
-            st.markdown(f"**📍 {gw_id}**")
+            st.markdown(f"**?? {gw_id}**")
             cx, cy, cdel = st.columns([2, 2, 1])
             nx = cx.number_input("X (m)", value=float(pos['x']), key=f"x_{gw_id}")
             ny = cy.number_input("Y (m)", value=float(pos['y']), key=f"y_{gw_id}")
-            is_del = cdel.checkbox("🗑️", key=f"del_{gw_id}")
+            is_del = cdel.checkbox("???", key=f"del_{gw_id}")
             temp_changes[gw_id] = "DELETE" if is_del else {"x": nx, "y": ny}
        
-        if st.form_submit_button("💾 Save All Changes", use_container_width=True):
+        if st.form_submit_button("?? Save All Changes", use_container_width=True):
             for gid, action in temp_changes.items():
                 if action == "DELETE":
                     ers.delete_gw(gid)
@@ -577,8 +582,239 @@ with col_map2:
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Upload a map image to preview.")
+        
+        
+        
+# --------------------------------------------------------------------------------
+#  8. ROOM ZONE CLICK TOOL
+# --------------------------------------------------------------------------------
+st.markdown("---")
+st.markdown('<div class="section-title">Room Zone Click Tool</div>', unsafe_allow_html=True)
 
-# ── Live summary ──────────────────────────────────────────────────────────────
+st.markdown("""
+<div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#586069;
+            line-height:1.8;margin-bottom:16px;">
+Click two corners on the map to define a room zone. First click the top-left
+corner of the room, then click the bottom-right corner. The system will convert
+the selected image area into real metre coordinates and use it for SMS and
+dashboard location labels.
+</div>
+""", unsafe_allow_html=True)
+
+map_img_path = os.path.join(ers.MAP_DIR, "company_map.png")
+
+if not os.path.exists(map_img_path):
+    st.info("Upload a map image first before defining room zones.")
+else:
+    img = Image.open(map_img_path).convert("RGB")
+    img_w, img_h = img.size
+
+    map_width_m = float(ers.fetch_map_scale())
+    pixel_per_meter = img_w / map_width_m
+    map_height_m = img_h / pixel_per_meter
+
+    st.caption(
+        f"Map real size: {map_width_m:.2f} m � {map_height_m:.2f} m � "
+        f"Image size: {img_w}px � {img_h}px � "
+        f"Scale: {pixel_per_meter:.2f}px/m"
+    )
+
+    room_name = st.text_input(
+        "Room Name",
+        placeholder="e.g. Office 1, Office 2, Lobby, Boardroom",
+        key="click_room_name"
+    )
+
+    c_reset1, c_reset2 = st.columns([1, 4])
+    with c_reset1:
+        if st.button("Reset Points", use_container_width=True):
+            st.session_state.room_corner_1 = None
+            st.session_state.room_corner_2 = None
+            st.rerun()
+
+    st.markdown("Click on the map below:")
+
+    clicked = streamlit_image_coordinates(
+        img,
+        key="room_zone_image_click"
+    )
+
+    if "latest_room_click" not in st.session_state:
+        st.session_state.latest_room_click = None
+
+    if clicked is not None:
+        st.session_state.latest_room_click = {
+            "x": float(clicked["x"]),
+            "y": float(clicked["y"])
+        }
+
+    latest_click = st.session_state.latest_room_click
+
+    if latest_click:
+        st.info(
+            f"Latest click: image x={latest_click['x']:.0f}px, "
+            f"y={latest_click['y']:.0f}px"
+        )
+    else:
+        st.info("Click once on the map, then choose whether it is Corner 1 or Corner 2.")
+
+    c_set1, c_set2, c_reset = st.columns(3)
+
+    with c_set1:
+        if st.button("Set Latest Click as Corner 1", use_container_width=True, key="room_zone_set_corner_1"):
+            if latest_click is None:
+                st.error("Please click on the map first.")
+            else:
+                st.session_state.room_corner_1 = dict(latest_click)
+                st.success("Corner 1 saved.")
+                st.rerun()
+
+    with c_set2:
+        if st.button("Set Latest Click as Corner 2", use_container_width=True, key="room_zone_set_corner_2"):
+            if latest_click is None:
+                st.error("Please click on the map first.")
+            else:
+                st.session_state.room_corner_2 = dict(latest_click)
+                st.success("Corner 2 saved.")
+                st.rerun()
+
+    with c_reset:
+        if st.button("Reset Points", use_container_width=True, key="room_zone_reset_points"):
+            st.session_state.room_corner_1 = None
+            st.session_state.room_corner_2 = None
+            st.session_state.latest_room_click = None
+            st.rerun()
+
+    p1 = st.session_state.room_corner_1
+    p2 = st.session_state.room_corner_2
+
+    if p1:
+        st.info(f"Corner 1: image x={p1['x']:.0f}px, y={p1['y']:.0f}px")
+
+    if p2:
+        st.info(f"Corner 2: image x={p2['x']:.0f}px, y={p2['y']:.0f}px")
+
+    if p1 and p2:
+        x_min_px = min(p1["x"], p2["x"])
+        y_min_px = min(p1["y"], p2["y"])
+        x_max_px = max(p1["x"], p2["x"])
+        y_max_px = max(p1["y"], p2["y"])
+
+        x_min_m = x_min_px / pixel_per_meter
+        y_min_m = y_min_px / pixel_per_meter
+        x_max_m = x_max_px / pixel_per_meter
+        y_max_m = y_max_px / pixel_per_meter
+
+        st.success(
+            f"Selected room zone: "
+            f"X={x_min_m:.2f}�{x_max_m:.2f} m, "
+            f"Y={y_min_m:.2f}�{y_max_m:.2f} m"
+        )
+
+        if st.button("?? Save Selected Room Zone", use_container_width=True, key="room_zone_save_selected"):
+            if not room_name.strip():
+                st.error("Please enter a room name before saving.")
+            elif x_max_m <= x_min_m or y_max_m <= y_min_m:
+                st.error("Invalid room zone. Please select two different corners.")
+            else:
+                ers.add_room_zone(
+                    room_name.strip(),
+                    x_min_m,
+                    y_min_m,
+                    x_max_m,
+                    y_max_m,
+                )
+                st.session_state.room_corner_1 = None
+                st.session_state.room_corner_2 = None
+                st.session_state.latest_room_click = None
+                st.success(f"Room zone '{room_name.strip()}' saved.")
+                st.rerun()
+    
+    
+    
+    
+
+    if clicked is not None:
+        click_x = float(clicked["x"])
+        click_y = float(clicked["y"])
+
+        if st.session_state.room_corner_1 is None:
+            st.session_state.room_corner_1 = {"x": click_x, "y": click_y}
+            st.success(f"First corner selected: x={click_x:.0f}px, y={click_y:.0f}px")
+            st.rerun()
+
+        elif st.session_state.room_corner_2 is None:
+            st.session_state.room_corner_2 = {"x": click_x, "y": click_y}
+            st.success(f"Second corner selected: x={click_x:.0f}px, y={click_y:.0f}px")
+            st.rerun()
+
+    p1 = st.session_state.room_corner_1
+    p2 = st.session_state.room_corner_2
+
+    if p1:
+        st.info(f"Corner 1: image x={p1['x']:.0f}px, y={p1['y']:.0f}px")
+
+    if p2:
+        st.info(f"Corner 2: image x={p2['x']:.0f}px, y={p2['y']:.0f}px")
+
+    if p1 and p2:
+        x_min_px = min(p1["x"], p2["x"])
+        y_min_px = min(p1["y"], p2["y"])
+        x_max_px = max(p1["x"], p2["x"])
+        y_max_px = max(p1["y"], p2["y"])
+
+        x_min_m = x_min_px / pixel_per_meter
+        y_min_m = y_min_px / pixel_per_meter
+        x_max_m = x_max_px / pixel_per_meter
+        y_max_m = y_max_px / pixel_per_meter
+
+        st.success(
+            f"Selected room zone: "
+            f"X={x_min_m:.2f}�{x_max_m:.2f} m, "
+            f"Y={y_min_m:.2f}�{y_max_m:.2f} m"
+        )
+
+        if st.button("?? Save Selected Room Zone", use_container_width=True):
+            if not room_name.strip():
+                st.error("Please enter a room name before saving.")
+            elif x_max_m <= x_min_m or y_max_m <= y_min_m:
+                st.error("Invalid room zone. Please select two different corners.")
+            else:
+                ers.add_room_zone(
+                    room_name.strip(),
+                    x_min_m,
+                    y_min_m,
+                    x_max_m,
+                    y_max_m,
+                )
+                st.session_state.room_corner_1 = None
+                st.session_state.room_corner_2 = None
+                st.success(f"Room zone '{room_name.strip()}' saved.")
+                st.rerun()
+
+    st.markdown("### Saved Room Zones")
+    room_zones = ers.fetch_room_zones()
+
+    if not room_zones:
+        st.info("No room zones saved yet.")
+    else:
+        for zone in room_zones:
+            c1, c2, c3 = st.columns([3, 5, 1])
+            with c1:
+                st.markdown(f"**{zone['room_name']}**")
+            with c2:
+                st.caption(
+                    f"X={zone['x_min']:.2f}�{zone['x_max']:.2f} m � "
+                    f"Y={zone['y_min']:.2f}�{zone['y_max']:.2f} m"
+                )
+            with c3:
+                if st.button("Delete", key=f"delete_room_zone_{zone['id']}"):
+                    ers.delete_room_zone(zone["id"])
+                    st.rerun()
+                    
+                    
+
+# -- Live summary --------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Current Assignment Summary</div>', unsafe_allow_html=True)
 
@@ -587,10 +823,10 @@ final_staff = ers.fetch_all_staff()
 st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin-bottom:10px;">Emergency Alerts</div>', unsafe_allow_html=True)
 sc1, sc2, sc3, sc4 = st.columns(4)
 groups = [
-    (sc1, "✉ Email · Mass",     "email_alerts_mass",     "email"),
-    (sc2, "📱 SMS · Mass",       "sms_alerts_mass",       "phone"),
-    (sc3, "✉ Email · Personal",  "email_alerts_personal", "email"),
-    (sc4, "📱 SMS · Personal",   "sms_alerts_personal",   "phone"),
+    (sc1, "? Email � Mass",     "email_alerts_mass",     "email"),
+    (sc2, "?? SMS � Mass",       "sms_alerts_mass",       "phone"),
+    (sc3, "? Email � Personal",  "email_alerts_personal", "email"),
+    (sc4, "?? SMS � Personal",   "sms_alerts_personal",   "phone"),
 ]
 for col, label, flag, field in groups:
     with col:
@@ -602,10 +838,10 @@ for col, label, flag, field in groups:
 st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin:18px 0 10px 0;">Administration Alerts</div>', unsafe_allow_html=True)
 ad1, ad2, ad3, ad4 = st.columns(4)
 admin_groups = [
-    (ad1, "🔋 Email · Battery",   "admin_email_low_battery"),
-    (ad2, "🔋 SMS · Battery",     "admin_sms_low_battery"),
-    (ad3, "❤️ Email · Heartbeat Fail", "admin_email_heartbeat_fail"),
-    (ad4, "❤️ SMS · Heartbeat Fail", "admin_sms_heartbeat_fail"),
+    (ad1, "?? Email � Battery",   "admin_email_low_battery"),
+    (ad2, "?? SMS � Battery",     "admin_sms_low_battery"),
+    (ad3, "?? Email � Heartbeat Fail", "admin_email_heartbeat_fail"),
+    (ad4, "?? SMS � Heartbeat Fail", "admin_sms_heartbeat_fail"),
 ]
 for col, label, flag in admin_groups:
     with col:
@@ -613,5 +849,4 @@ for col, label, flag in admin_groups:
         st.markdown(f'<div class="mono" style="font-size:0.6rem; letter-spacing:1px;">{label} ({len(members)})</div>', unsafe_allow_html=True)
         for s in members:
             st.markdown(f'<div style="font-size:0.75rem; border-bottom:1px solid #f0f0f0; padding:2px 0;">{s["name"]}</div>', unsafe_allow_html=True)
-
-st.markdown('<div style="margin-top:40px; text-align:center; font-family:IBM Plex Mono,monospace; font-size:0.6rem; color:#30363d; letter-spacing:2px;">ERS · CONFIGURATION</div>', unsafe_allow_html=True)
+st.markdown('<div style="margin-top:40px; text-align:center; font-family:IBM Plex Mono,monospace; font-size:0.6rem; color:#30363d; letter-spacing:2px;">ERS � CONFIGURATION</div>', unsafe_allow_html=True)

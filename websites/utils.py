@@ -1,5 +1,5 @@
 """
-utils.py — shared config, CSS, and DB helpers for every ERS page.
+utils.py � shared config, CSS, and DB helpers for every ERS page.
 Centrally managed paths for the new project structure.
 """
 
@@ -10,9 +10,9 @@ import sys
 import json
 from datetime import datetime, timedelta
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  PATH CALCULATIONS
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR    = os.path.dirname(CURRENT_DIR)
 
@@ -26,9 +26,9 @@ AUDIO_DIR = os.path.join(ROOT_DIR, "assets", "audios")
 os.makedirs(MAP_DIR, exist_ok=True)
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  CONFIG
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 SERVER_HOST    = "127.0.0.1"
 SERVER_PORT    = 8081
 DRILL_DEVICE   = "DASHBOARD_DRILL"
@@ -41,9 +41,9 @@ def autorefresh():
     from streamlit_autorefresh import st_autorefresh
     st_autorefresh(interval=REFRESH_SEC * 1000, key="ers_autorefresh")
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  SHARED CSS
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 ERS_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
@@ -213,9 +213,9 @@ def passes_filter(incident, type_filter):
         return True
     return str(incident.get("emergency_type", "")).lower() == str(type_filter).lower()
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  DB — CORE
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  DB � CORE
+# --------------------------------------------------------------------------------
 
 def db_connect():
     if not os.path.exists(DB_PATH):
@@ -272,6 +272,69 @@ def fetch_incidents(limit=200):
         return [dict(r) for r in rows]
     finally:
         conn.close()
+        
+        
+def fetch_latest_incident_with_location():
+    """
+    Fetch the latest incident that contains estimated_location in raw_json.
+    This is used by the dashboard to display the most recent emergency location.
+    """
+    conn = db_connect()
+    if not conn:
+        return None
+
+    try:
+        rows = conn.execute("""
+            SELECT id, server_time, device_id, emergency_type, trigger_source,
+                   message, triggered_by, raw_json
+            FROM incidents
+            ORDER BY id DESC
+            LIMIT 30
+        """).fetchall()
+
+        for row in rows:
+            row = dict(row)
+            raw_json = row.get("raw_json")
+
+            if not raw_json:
+                continue
+
+            try:
+                raw = json.loads(raw_json)
+            except Exception:
+                continue
+
+            loc = raw.get("estimated_location")
+            if not loc:
+                continue
+
+            if "x" not in loc or "y" not in loc:
+                continue
+
+            return {
+                "id": row.get("id"),
+                "server_time": row.get("server_time"),
+                "device_id": row.get("device_id"),
+                "emergency_type": row.get("emergency_type"),
+                "trigger_source": row.get("trigger_source"),
+                "message": row.get("message"),
+                "triggered_by": row.get("triggered_by"),
+                "x": float(loc["x"]),
+                "y": float(loc["y"]),
+                "estimated_location": loc,
+                "raw": raw,
+            }
+
+        return None
+
+    except Exception as e:
+        print(f"fetch_latest_incident_with_location failed: {e}")
+        return None
+
+    finally:
+        conn.close()
+        
+        
 
 def get_device_comm_status(device_id: str, timeout_s: int = OFFLINE_TIMEOUT_S):
     """
@@ -539,7 +602,7 @@ def delete_device(device_db_id):
     finally:
         conn.close()
 
-# ── System Status ─────────────────────────────────────────────────────────────
+# -- System Status -------------------------------------------------------------
 
 def get_system_status():
     status = {}
@@ -579,7 +642,7 @@ def get_system_status():
 
     return status
 
-# ── System Control ────────────────────────────────────────────────────────────
+# -- System Control ------------------------------------------------------------
 
 def get_control(key: str) -> str:
     try:
@@ -693,7 +756,7 @@ def send_ack_offline_alert(device_id: str, ack_by: str = "admin"):
     except Exception as e:
         return False, str(e)
 
-# ── UI Helpers ────────────────────────────────────────────────────────────────
+# -- UI Helpers ----------------------------------------------------------------
 
 def pill(status, label):
     cls = {"ok":"pill-ok", "failed":"pill-fail", "queue_full":"pill-fail", "skipped":"pill-skip", "queued":"pill-ok"}.get(status, "pill-unknown")
@@ -701,7 +764,7 @@ def pill(status, label):
 
 def status_pill(state, text):
     cls = {"ok": "pill-ok", "warn": "pill-warn", "error": "pill-fail"}.get(state, "pill-unknown")
-    icon = {"ok": "●", "warn": "▲", "error": "✕", "unknown": "○"}.get(state, "○")
+    icon = {"ok": "?", "warn": "?", "error": "?", "unknown": "?"}.get(state, "?")
     return f'<span class="pill {cls}">{icon} {text}</span>'
 
 def type_badge(em_type, src):
@@ -729,9 +792,9 @@ def ers_header(subtitle=""):
     </div>
     """
 
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 #  CLIENT DEVICE BATTERIES
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
 
 def fetch_all_device_batteries():
     conn = db_connect()
@@ -756,9 +819,9 @@ def fetch_all_device_batteries():
     finally:
         conn.close()
 
-# ════════════════════════════════════════════════════════════════════════════════
-#  SYSTEM MEMORY — MAP & GATEWAYS
-# ════════════════════════════════════════════════════════════════════════════════
+# --------------------------------------------------------------------------------
+#  SYSTEM MEMORY � MAP & GATEWAYS
+# --------------------------------------------------------------------------------
 
 def init_map_table():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -810,3 +873,102 @@ def save_map_scale(meters_wide):
 def fetch_map_scale():
     val = get_control("map_meters_wide")
     return float(val) if val != "0" else 50.0
+    
+    
+    
+# --------------------------------------------------------------------------------
+#  ROOM ZONES � User-defined room boundaries
+# --------------------------------------------------------------------------------
+
+def init_room_zones_table():
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS room_zones (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room_name TEXT NOT NULL,
+            x_min REAL NOT NULL,
+            y_min REAL NOT NULL,
+            x_max REAL NOT NULL,
+            y_max REAL NOT NULL,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+        """)
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def fetch_room_zones():
+    conn = db_connect()
+    if not conn:
+        return []
+    try:
+        rows = conn.execute("""
+            SELECT id, room_name, x_min, y_min, x_max, y_max
+            FROM room_zones
+            ORDER BY id DESC
+        """).fetchall()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
+    finally:
+        conn.close()
+
+
+def add_room_zone(room_name, x_min, y_min, x_max, y_max):
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute("""
+            INSERT INTO room_zones (room_name, x_min, y_min, x_max, y_max)
+            VALUES (?, ?, ?, ?, ?)
+        """, (
+            room_name,
+            float(x_min),
+            float(y_min),
+            float(x_max),
+            float(y_max),
+        ))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_room_zone(zone_id):
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute("DELETE FROM room_zones WHERE id=?", (int(zone_id),))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def lookup_room_by_xy(x, y):
+    """
+    Return room name according to x,y coordinate.
+    """
+    conn = db_connect()
+    if not conn:
+        return None
+
+    try:
+        rows = conn.execute("""
+            SELECT room_name, x_min, y_min, x_max, y_max
+            FROM room_zones
+        """).fetchall()
+
+        for row in rows:
+            x_min = min(float(row["x_min"]), float(row["x_max"]))
+            x_max = max(float(row["x_min"]), float(row["x_max"]))
+            y_min = min(float(row["y_min"]), float(row["y_max"]))
+            y_max = max(float(row["y_min"]), float(row["y_max"]))
+
+            if x_min <= float(x) <= x_max and y_min <= float(y) <= y_max:
+                return row["room_name"]
+
+        return None
+
+    except Exception:
+        return None
+    finally:
+        conn.close()
