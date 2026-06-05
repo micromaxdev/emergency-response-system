@@ -170,3 +170,47 @@ def calculate_distance_error(x, y, gateways):
         })
 
     return errors
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    gateways = [
+        {"gateway_id": "gw1", "x": 0.0, "y": 0.0, "rssi": -74},
+        {"gateway_id": "gw2", "x": 10.0, "y": 0.0, "rssi": -76},
+        {"gateway_id": "gw3", "x": 0.0, "y": 10.0, "rssi": -76},
+    ]
+
+    result = estimate_location_from_rssi(
+        gateways,
+        measured_power=-59,
+        path_loss_exponent=2.0,
+        map_width=10,
+        map_height=10
+    )
+
+    print("Estimated location:")
+    print(f"x = {result['x']:.2f} m")
+    print(f"y = {result['y']:.2f} m")
+
+    print("\nGateways used:")
+    for gw in result["gateways_used"]:
+        print(
+            gw["gateway_id"],
+            "RSSI:", gw["rssi"],
+            "distance:", round(gw["distance"], 2), "m"
+        )
+
+    errors = calculate_distance_error(
+        result["x"],
+        result["y"],
+        result["gateways_used"]
+    )
+
+    print("\nDistance errors:")
+    for e in errors:
+        print(e)

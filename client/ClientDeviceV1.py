@@ -12,7 +12,7 @@ import socket
 import ujson
 
 # ---------------- User config ----------------
-WIFI_SSID = "2KF2197U00607-BFW"
+WIFI_SSID = "2KF2197U00607-BFW-5G"
 WIFI_PASS = "MmxLetsUIn2014"
 
 PI5_IP   = "192.168.115.49"

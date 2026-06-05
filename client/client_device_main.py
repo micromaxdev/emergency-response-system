@@ -122,8 +122,8 @@ class INA219:
 #  USER CONFIG
 # ================================================================
 
-WIFI_SSID = "wifi ssid"
-WIFI_PASS = "wifi pass"
+WIFI_SSID = "2KF2197U00607-BFW"
+WIFI_PASS = "MmxLetsUIn2014"
 
 PI5_IP   = "192.168.115.49"
 PI5_PORT = 8081
@@ -205,7 +205,7 @@ FALL_COOLDOWN_MS    = 10000
 
 FALL_CANCEL_WINDOW_MS = 10_000
 
-WIFI_CONNECT_TIMEOUT_MS = 4000
+WIFI_CONNECT_TIMEOUT_MS = 15000
 SOCKET_TIMEOUT_S        = 2
 
 
@@ -239,24 +239,39 @@ _wlan       = None   # internal Wi-Fi handle
 # ---- Wi-Fi helpers ----
 def wifi_connect_if_needed(timeout_ms=WIFI_CONNECT_TIMEOUT_MS):
     global _wlan
+
     if _wlan is None:
         _wlan = network.WLAN(network.STA_IF)
         _wlan.active(True)
+
     if _wlan.isconnected():
+        print("Already connected:", _wlan.ifconfig())
         return True
+
     print("Connecting Wi-Fi...")
+    print("SSID:", WIFI_SSID)
+
     try:
         _wlan.disconnect()
     except:
         pass
-    time.sleep_ms(300)
+
+    time.sleep_ms(500)
     _wlan.connect(WIFI_SSID, WIFI_PASS)
+
     t0 = time.ticks_ms()
     while not _wlan.isconnected():
+        status = _wlan.status()
+        print("Wi-Fi status:", status)
+
         if time.ticks_diff(time.ticks_ms(), t0) > timeout_ms:
             print("Wi-Fi connect timeout")
+            print("Final status:", _wlan.status())
+            print("ifconfig:", _wlan.ifconfig())
             return False
-        time.sleep_ms(150)
+
+        time.sleep_ms(1000)
+
     print("Wi-Fi connected:", _wlan.ifconfig())
     return True
 
