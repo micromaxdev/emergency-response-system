@@ -36,9 +36,3 @@ def relay_pulse(ch: int = RELAY_CH, on_sec: float = 2.0, off_sec: float = 0.0, r
         relay_off(ch)
         if off_sec > 0:
             time.sleep(off_sec)
-
-
-if __name__ == "__main__":
-    print("Testing relay channel:", RELAY_CH)
-    relay_pulse(RELAY_CH, on_sec=1.0, off_sec=1.0, repeat=3)
-    print("Done.")

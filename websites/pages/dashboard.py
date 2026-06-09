@@ -1,5 +1,5 @@
 """
-pages/dashboard.py — Live incident dashboard, system status, test drill, retention.
+pages/dashboard.py â€” Live incident dashboard, system status, test drill, retention.
 """
 
 import streamlit as st
@@ -11,7 +11,7 @@ import plotly.express as px
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
 
-st.set_page_config(page_title="ERS · Dashboard", layout="wide")
+st.set_page_config(page_title="ERS Â· Dashboard", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -35,7 +35,7 @@ def trigger_drill():
         "emergency_type": "drill",
         "trigger_source": ers.DRILL_SOURCE,
         "device_id": ers.DRILL_DEVICE,
-        "emergency_message": "TEST DRILL — Simulated Mass Emergency",
+        "emergency_message": "TEST DRILL â€” Simulated Mass Emergency",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "drill": True,
     }
@@ -44,7 +44,7 @@ def trigger_drill():
             s.sendall(json.dumps(payload).encode("utf-8"))
         return "ok", None
     except ConnectionRefusedError:
-        return "error", f"Connection refused — is the server running on {ers.SERVER_HOST}:{ers.SERVER_PORT}?"
+        return "error", f"Connection refused â€” is the server running on {ers.SERVER_HOST}:{ers.SERVER_PORT}?"
     except socket.timeout:
         return "error", "Connection timed out (5s)."
     except Exception as e:
@@ -134,7 +134,7 @@ if ers.alerts_active():
     </div>
     """, unsafe_allow_html=True)
     if st.button(
-        "STOP ALL ALERTS — SILENCE RELAY & AUDIO",
+        "STOP ALL ALERTS â€” SILENCE RELAY & AUDIO",
         width="stretch",
         type="primary",
         key="stop_all_alerts_main"
@@ -166,7 +166,7 @@ STATUS_CARDS = [
 ]
 cards_html = '<div class="status-grid">'
 for key, label in STATUS_CARDS:
-    state, detail = sys_status.get(key, ("unknown", "—"))
+    state, detail = sys_status.get(key, ("unknown", "â€”"))
     cards_html += f"""
     <div class="status-card">
       <div class="status-card-label">{label}</div>
@@ -226,14 +226,14 @@ st.markdown(f"""
               font-size:0.68rem;
               color:#586069;
               margin-top:4px;">
-    Last seen: {comm["last_seen"] or "—"}
+    Last seen: {comm["last_seen"] or "â€”"}
   </div>
 </div>
 """, unsafe_allow_html=True)
 
 if comm["state"] == "offline":
     if st.button(
-        f"ACKNOWLEDGE OFFLINE ALERT · {TARGET_DEVICE_ID}",
+        f"ACKNOWLEDGE OFFLINE ALERT Â· {TARGET_DEVICE_ID}",
         width="stretch",
         key=f"ack_offline_{TARGET_DEVICE_ID}"
     ):
@@ -264,7 +264,7 @@ else:
     real_height_m = img_h / scale
 
     st.caption(
-        f"Map size: {float(map_meters_wide):.2f} m wide × {real_height_m:.2f} m high"
+        f"Map size: {float(map_meters_wide):.2f} m wide Ã— {real_height_m:.2f} m high"
     )
 
     fig = px.imshow(img)
@@ -363,8 +363,8 @@ if st.session_state.drill_result == "ok":
     st.markdown("""
     <div class="drill-alert">
       <strong>? TEST DRILL TRIGGERED</strong><br>
-      Payload sent — full mass emergency workflow is running on the server.<br>
-      Audio · Email · SMS · Relay (120s) are all active. This is a drill.
+      Payload sent â€” full mass emergency workflow is running on the server.<br>
+      Audio Â· Email Â· SMS Â· Relay (120s) are all active. This is a drill.
     </div>""", unsafe_allow_html=True)
 elif st.session_state.drill_result:
     st.error(f"Drill failed: {st.session_state.drill_result}")
@@ -372,7 +372,7 @@ elif st.session_state.drill_result:
 col_drill, col_clear = st.columns([4, 1])
 with col_drill:
     if st.button(
-        "TRIGGER TEST DRILL  ·  Mass Emergency Simulation",
+        "TRIGGER TEST DRILL  Â·  Mass Emergency Simulation",
         disabled=not st.session_state.drill_enabled,
         width="stretch",
         type="primary",
@@ -399,7 +399,7 @@ st.markdown(f"""
 <div class="purge-box">
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--text);margin-bottom:8px;">
     Retention window: <strong style="color:#111;">{ers.RETENTION_DAYS} days</strong>
-    &nbsp;·&nbsp; Cutoff: <strong style="color:#111;">{cutoff_display}</strong>
+    &nbsp;Â·&nbsp; Cutoff: <strong style="color:#111;">{cutoff_display}</strong>
   </div>
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:{'#e63946' if purgeable > 0 else '#2ec4b6'};">
     {'? ' + str(purgeable) + ' incident(s) older than ' + str(ers.RETENTION_DAYS) + ' days are eligible for deletion.' if purgeable > 0 else '? All incidents are within the retention window.'}
@@ -466,7 +466,7 @@ else:
       <span style="min-width:130px">Device</span>
       <span style="min-width:130px">Triggered By</span>
       <span style="flex:1">Message</span>
-      <span style="width:175px">Audio · Email · SMS</span>
+      <span style="width:175px">Audio Â· Email Â· SMS</span>
       <span style="width:90px">Relay</span>
       <span style="min-width:130px">Time</span>
     </div>""", unsafe_allow_html=True)
@@ -476,9 +476,9 @@ else:
         src = inc.get("trigger_source", "")
         device_id = inc.get("device_id") or inc.get("from_ip") or ""
         label = ers.get_device_label(device_id)
-        dev_display = label or device_id or "—"
+        dev_display = label or device_id or "â€”"
         if len(dev_display) > 22:
-            dev_display = dev_display[:21] + "…"
+            dev_display = dev_display[:21] + "â€¦"
 
         tb = inc.get("triggered_by")
         if tb:
@@ -488,16 +488,16 @@ else:
         elif src == "dashboard_manual":
             triggered_by = '<span style="font-size:0.75rem;color:#e63946;">Dashboard Manual</span>'
         else:
-            triggered_by = '<span style="font-size:0.75rem;color:#586069;">— unassigned</span>'
+            triggered_by = '<span style="font-size:0.75rem;color:#586069;">â€” unassigned</span>'
 
-        msg = (inc.get("message") or "—")[:50]
-        ts = (inc.get("server_time") or "—")[:16]
+        msg = (inc.get("message") or "â€”")[:50]
+        ts = (inc.get("server_time") or "â€”")[:16]
         alerts = (
-            ers.pill(inc.get("audio_status"), f"{inc.get('audio_status') or '—'}") + " " +
-            ers.pill(inc.get("email_status"), f"? {inc.get('email_status') or '—'}") + " " +
-            ers.pill(inc.get("sms_status"), f"{inc.get('sms_status') or '—'}")
+            ers.pill(inc.get("audio_status"), f"{inc.get('audio_status') or 'â€”'}") + " " +
+            ers.pill(inc.get("email_status"), f"? {inc.get('email_status') or 'â€”'}") + " " +
+            ers.pill(inc.get("sms_status"), f"{inc.get('sms_status') or 'â€”'}")
         )
-        relay = ers.pill(inc.get("relay_status"), f"? {inc.get('relay_status') or '—'}")
+        relay = ers.pill(inc.get("relay_status"), f"? {inc.get('relay_status') or 'â€”'}")
 
         st.markdown(f"""
         <div class="inc-row {ers.row_cls(em, src)}">
@@ -516,5 +516,5 @@ st.markdown(f"""
 <div style="margin-top:40px;padding-top:14px;border-top:1px solid #1e2530;
             font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
             letter-spacing:2px;text-align:center;">
-  ERS · DASHBOARD · retention={ers.RETENTION_DAYS}d
+  ERS Â· DASHBOARD Â· retention={ers.RETENTION_DAYS}d
 </div>""", unsafe_allow_html=True)

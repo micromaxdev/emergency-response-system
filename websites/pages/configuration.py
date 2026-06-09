@@ -1,5 +1,5 @@
 """
-websites/pages/configuration.py ó Device, Alert, Audio and Map Management.
+websites/pages/configuration.py ‚Äî Device, Alert, Audio and Map Management.
 Full version with no omissions. Centrally managed via utils.py (ers).
 """
 
@@ -10,7 +10,7 @@ from PIL import Image
 from streamlit_image_coordinates import streamlit_image_coordinates
 
 # --------------------------------------------------------------------------------
-#  1. PATH & MODULE IMPORT ó Connect to utils.py
+#  1. PATH & MODULE IMPORT ‚Äî Connect to utils.py
 # --------------------------------------------------------------------------------
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
@@ -27,7 +27,7 @@ if os.path.exists(ers.DB_PATH):
 # --------------------------------------------------------------------------------
 #  2. PAGE SETUP & SESSION STATE
 # --------------------------------------------------------------------------------
-st.set_page_config(page_title="ERS ∑ Configuration", page_icon="??", layout="wide")
+st.set_page_config(page_title="ERS ¬∑ Configuration", page_icon="‚öôÔ∏è", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -57,8 +57,8 @@ if not os.path.exists(ers.DB_PATH):
     st.stop()
 
 all_staff = ers.fetch_all_staff()
-staff_options           = {s["id"]: f"{s['name']} ({s.get('role','ó')})" for s in all_staff}
-staff_options_with_none = {None: "ó Unassigned ó", **staff_options}
+staff_options           = {s["id"]: f"{s['name']} ({s.get('role','‚Äî')})" for s in all_staff}
+staff_options_with_none = {None: "‚Äî Unassigned ‚Äî", **staff_options}
 
 # --------------------------------------------------------------------------------
 #  3. DEVICE MANAGEMENT
@@ -85,7 +85,7 @@ with st.expander("?  Register New Device", expanded=False):
             manual_id = st.text_input("Device ID (manual)", placeholder="e.g. pico_room3")
         with c2:
             new_label    = st.text_input("Friendly Label", placeholder="e.g. Room 3 Panic Button")
-            new_location = st.text_input("Location",       placeholder="e.g. Building A ∑ Floor 2")
+            new_location = st.text_input("Location",       placeholder="e.g. Building A ¬∑ Floor 2")
 
         assigned_id = st.selectbox(
             "Assign to Staff Member",
@@ -160,13 +160,13 @@ else:
             assign_pill = (
                 f'<span class="pill pill-ok">?? {d["staff_name"]}</span>'
                 if d.get("assigned_staff_id")
-                else '<span class="pill pill-unknown">ó unassigned</span>'
+                else '<span class="pill pill-unknown">‚Äî unassigned</span>'
             )
             st.markdown(f"""
             <div class="inc-row">
               <span style="min-width:160px; font-family:IBM Plex Mono,monospace;">{d['device_id']}</span>
-              <span style="min-width:160px; font-weight:600;">{d.get('label') or 'ó'}</span>
-              <span style="flex:1; color:#586069;">{d.get('location') or 'ó'}</span>
+              <span style="min-width:160px; font-weight:600;">{d.get('label') or '‚Äî'}</span>
+              <span style="flex:1; color:#586069;">{d.get('location') or '‚Äî'}</span>
               <span style="min-width:180px">{assign_pill}</span>
             </div>""", unsafe_allow_html=True)
 
@@ -181,7 +181,7 @@ else:
                     st.rerun()
 
 # --------------------------------------------------------------------------------
-#  4. ALERT RECIPIENTS ó MASS EMERGENCY
+#  4. ALERT RECIPIENTS ‚Äî MASS EMERGENCY
 # --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Mass Emergency Alert Recipients</div>', unsafe_allow_html=True)
@@ -197,12 +197,12 @@ else:
     mc1, mc2 = st.columns(2)
 
     with mc1:
-        st.markdown('? Email ó Mass Emergency')
+        st.markdown('? Email ‚Äî Mass Emergency')
         with st.form("mass_email_form"):
             mass_email_states = {}
             for s in fresh:
                 mass_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','ó')})",
+                    f"{s['name']} ({s.get('role','‚Äî')})",
                     value=bool(s.get("email_alerts_mass")),
                     key=f"me_{s['id']}",
                     disabled=not s.get("email"),
@@ -218,12 +218,12 @@ else:
                 st.rerun()
 
     with mc2:
-        st.markdown('?? SMS ó Mass Emergency')
+        st.markdown('?? SMS ‚Äî Mass Emergency')
         with st.form("mass_sms_form"):
             mass_sms_states = {}
             for s in fresh:
                 mass_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','ó')})",
+                    f"{s['name']} ({s.get('role','‚Äî')})",
                     value=bool(s.get("sms_alerts_mass")),
                     key=f"ms_{s['id']}",
                     disabled=not s.get("phone"),
@@ -239,7 +239,7 @@ else:
                 st.rerun()
 
 # --------------------------------------------------------------------------------
-#  5. ALERT RECIPIENTS ó PERSONAL EMERGENCY
+#  5. ALERT RECIPIENTS ‚Äî PERSONAL EMERGENCY
 # --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Personal Emergency Alert Recipients</div>', unsafe_allow_html=True)
@@ -248,12 +248,12 @@ fresh2 = ers.fetch_all_staff()
 pc1, pc2 = st.columns(2)
 
 with pc1:
-    st.markdown('? Email ó Personal Emergency')
+    st.markdown('? Email ‚Äî Personal Emergency')
     with st.form("personal_email_form"):
         pers_email_states = {}
         for s in fresh2:
             pers_email_states[s["id"]] = st.checkbox(
-                f"{s['name']} ({s.get('role','ó')})",
+                f"{s['name']} ({s.get('role','‚Äî')})",
                 value=bool(s.get("email_alerts_personal")),
                 key=f"pe_{s['id']}",
                 disabled=not s.get("email"),
@@ -269,12 +269,12 @@ with pc1:
             st.rerun()
 
 with pc2:
-    st.markdown('?? SMS ó Personal Emergency')
+    st.markdown('?? SMS ‚Äî Personal Emergency')
     with st.form("personal_sms_form"):
         pers_sms_states = {}
         for s in fresh2:
             pers_sms_states[s["id"]] = st.checkbox(
-                f"{s['name']} ({s.get('role','ó')})",
+                f"{s['name']} ({s.get('role','‚Äî')})",
                 value=bool(s.get("sms_alerts_personal")),
                 key=f"ps_{s['id']}",
                 disabled=not s.get("phone"),
@@ -300,7 +300,7 @@ st.markdown('<div class="section-title">Administration Alerts</div>', unsafe_all
 st.markdown("""
 <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#586069;
             line-height:1.8;margin-bottom:20px;">
-  These alerts notify staff about system-level events ó client device low battery,
+  These alerts notify staff about system-level events ‚Äî client device low battery,
   UPS power status changes, and missed heartbeat / offline email and SMS alerts.
   Recipients are managed separately from emergency alerts.
 </div>
@@ -320,18 +320,18 @@ else:
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
                 letter-spacing:2px;color:#586069;text-transform:uppercase;
                 margin:8px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
-      ?? Battery Alerts ó Client Devices &amp; UPS
+      ?? Battery Alerts ‚Äî Client Devices &amp; UPS
     </div>""", unsafe_allow_html=True)
 
     bat1, bat2 = st.columns(2)
 
     with bat1:
-        st.markdown('? Email ó Battery Alerts')
+        st.markdown('? Email ‚Äî Battery Alerts')
         with st.form("admin_bat_email_form"):
             bat_email_states = {}
             for s in admin_staff:
                 bat_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','ó')})",
+                    f"{s['name']} ({s.get('role','‚Äî')})",
                     value=bool(s.get("admin_email_low_battery")),
                     key=f"bat_em_{s['id']}",
                     disabled=not s.get("email"),
@@ -351,12 +351,12 @@ else:
                 st.rerun()
 
     with bat2:
-        st.markdown('?? SMS ó Battery Alerts')
+        st.markdown('?? SMS ‚Äî Battery Alerts')
         with st.form("admin_bat_sms_form"):
             bat_sms_states = {}
             for s in admin_staff:
                 bat_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','ó')})",
+                    f"{s['name']} ({s.get('role','‚Äî')})",
                     value=bool(s.get("admin_sms_low_battery")),
                     key=f"bat_sms_{s['id']}",
                     disabled=not s.get("phone"),
@@ -391,12 +391,12 @@ else:
     hb1, hb2 = st.columns(2)
 
     with hb1:
-        st.markdown('? Email ó Heartbeat Fail')
+        st.markdown('? Email ‚Äî Heartbeat Fail')
         with st.form("admin_hb_email_form"):
             hb_email_states = {}
             for s in admin_staff:
                 hb_email_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','ó')})",
+                    f"{s['name']} ({s.get('role','‚Äî')})",
                     value=bool(s.get("admin_email_heartbeat_fail")),
                     key=f"hb_em_{s['id']}",
                     disabled=not s.get("email"),
@@ -416,12 +416,12 @@ else:
                 st.rerun()
 
     with hb2:
-        st.markdown('?? SMS ó Heartbeat Fail')
+        st.markdown('?? SMS ‚Äî Heartbeat Fail')
         with st.form("admin_hb_sms_form"):
             hb_sms_states = {}
             for s in admin_staff:
                 hb_sms_states[s["id"]] = st.checkbox(
-                    f"{s['name']} ({s.get('role','ó')})",
+                    f"{s['name']} ({s.get('role','‚Äî')})",
                     value=bool(s.get("admin_sms_heartbeat_fail")),
                     key=f"hb_sms_{s['id']}",
                     disabled=not s.get("phone"),
@@ -441,7 +441,7 @@ else:
                 st.rerun()
 
 # --------------------------------------------------------------------------------
-#  6. AUDIO SETTINGS ó Corrected Paths
+#  6. AUDIO SETTINGS ‚Äî Corrected Paths
 # --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Alert Audio Files</div>', unsafe_allow_html=True)
@@ -487,7 +487,7 @@ if st.button("?? Save Audio Files", use_container_width=True):
     st.rerun()
 
 # --------------------------------------------------------------------------------
-#  7. MAP & GATEWAY CONFIGURATION ó Dynamic Upgrade
+#  7. MAP & GATEWAY CONFIGURATION ‚Äî Dynamic Upgrade
 # --------------------------------------------------------------------------------
 st.markdown("---")
 st.markdown('<div class="section-title">Dynamic Map & Gateway Setup</div>', unsafe_allow_html=True)
@@ -614,8 +614,8 @@ else:
     map_height_m = img_h / pixel_per_meter
 
     st.caption(
-        f"Map real size: {map_width_m:.2f} m ◊ {map_height_m:.2f} m ∑ "
-        f"Image size: {img_w}px ◊ {img_h}px ∑ "
+        f"Map real size: {map_width_m:.2f} m √ó {map_height_m:.2f} m ¬∑ "
+        f"Image size: {img_w}px √ó {img_h}px ¬∑ "
         f"Scale: {pixel_per_meter:.2f}px/m"
     )
 
@@ -707,8 +707,8 @@ else:
 
         st.success(
             f"Selected room zone: "
-            f"X={x_min_m:.2f}ñ{x_max_m:.2f} m, "
-            f"Y={y_min_m:.2f}ñ{y_max_m:.2f} m"
+            f"X={x_min_m:.2f}‚Äì{x_max_m:.2f} m, "
+            f"Y={y_min_m:.2f}‚Äì{y_max_m:.2f} m"
         )
 
         if st.button("?? Save Selected Room Zone", use_container_width=True, key="room_zone_save_selected"):
@@ -770,8 +770,8 @@ else:
 
         st.success(
             f"Selected room zone: "
-            f"X={x_min_m:.2f}ñ{x_max_m:.2f} m, "
-            f"Y={y_min_m:.2f}ñ{y_max_m:.2f} m"
+            f"X={x_min_m:.2f}‚Äì{x_max_m:.2f} m, "
+            f"Y={y_min_m:.2f}‚Äì{y_max_m:.2f} m"
         )
 
         if st.button("?? Save Selected Room Zone", use_container_width=True):
@@ -804,8 +804,8 @@ else:
                 st.markdown(f"**{zone['room_name']}**")
             with c2:
                 st.caption(
-                    f"X={zone['x_min']:.2f}ñ{zone['x_max']:.2f} m ∑ "
-                    f"Y={zone['y_min']:.2f}ñ{zone['y_max']:.2f} m"
+                    f"X={zone['x_min']:.2f}‚Äì{zone['x_max']:.2f} m ¬∑ "
+                    f"Y={zone['y_min']:.2f}‚Äì{zone['y_max']:.2f} m"
                 )
             with c3:
                 if st.button("Delete", key=f"delete_room_zone_{zone['id']}"):
@@ -823,10 +823,10 @@ final_staff = ers.fetch_all_staff()
 st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin-bottom:10px;">Emergency Alerts</div>', unsafe_allow_html=True)
 sc1, sc2, sc3, sc4 = st.columns(4)
 groups = [
-    (sc1, "? Email ∑ Mass",     "email_alerts_mass",     "email"),
-    (sc2, "?? SMS ∑ Mass",       "sms_alerts_mass",       "phone"),
-    (sc3, "? Email ∑ Personal",  "email_alerts_personal", "email"),
-    (sc4, "?? SMS ∑ Personal",   "sms_alerts_personal",   "phone"),
+    (sc1, "? Email ¬∑ Mass",     "email_alerts_mass",     "email"),
+    (sc2, "?? SMS ¬∑ Mass",       "sms_alerts_mass",       "phone"),
+    (sc3, "? Email ¬∑ Personal",  "email_alerts_personal", "email"),
+    (sc4, "?? SMS ¬∑ Personal",   "sms_alerts_personal",   "phone"),
 ]
 for col, label, flag, field in groups:
     with col:
@@ -838,10 +838,10 @@ for col, label, flag, field in groups:
 st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin:18px 0 10px 0;">Administration Alerts</div>', unsafe_allow_html=True)
 ad1, ad2, ad3, ad4 = st.columns(4)
 admin_groups = [
-    (ad1, "?? Email ∑ Battery",   "admin_email_low_battery"),
-    (ad2, "?? SMS ∑ Battery",     "admin_sms_low_battery"),
-    (ad3, "?? Email ∑ Heartbeat Fail", "admin_email_heartbeat_fail"),
-    (ad4, "?? SMS ∑ Heartbeat Fail", "admin_sms_heartbeat_fail"),
+    (ad1, "?? Email ¬∑ Battery",   "admin_email_low_battery"),
+    (ad2, "?? SMS ¬∑ Battery",     "admin_sms_low_battery"),
+    (ad3, "?? Email ¬∑ Heartbeat Fail", "admin_email_heartbeat_fail"),
+    (ad4, "?? SMS ¬∑ Heartbeat Fail", "admin_sms_heartbeat_fail"),
 ]
 for col, label, flag in admin_groups:
     with col:
@@ -849,4 +849,4 @@ for col, label, flag in admin_groups:
         st.markdown(f'<div class="mono" style="font-size:0.6rem; letter-spacing:1px;">{label} ({len(members)})</div>', unsafe_allow_html=True)
         for s in members:
             st.markdown(f'<div style="font-size:0.75rem; border-bottom:1px solid #f0f0f0; padding:2px 0;">{s["name"]}</div>', unsafe_allow_html=True)
-st.markdown('<div style="margin-top:40px; text-align:center; font-family:IBM Plex Mono,monospace; font-size:0.6rem; color:#30363d; letter-spacing:2px;">ERS ∑ CONFIGURATION</div>', unsafe_allow_html=True)
+st.markdown('<div style="margin-top:40px; text-align:center; font-family:IBM Plex Mono,monospace; font-size:0.6rem; color:#30363d; letter-spacing:2px;">ERS ¬∑ CONFIGURATION</div>', unsafe_allow_html=True)

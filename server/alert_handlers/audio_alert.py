@@ -19,7 +19,7 @@ def _find_project_root(start: Path) -> Path:
 # --- Project paths ---
 PROJECT_ROOT = _find_project_root(Path(__file__).parent)
 AUDIO_DIR = Path(
-    os.getenv("ALERT_AUDIO_DIR", str(PROJECT_ROOT / "assets" / "audio"))
+    os.getenv("ALERT_AUDIO_DIR", str(PROJECT_ROOT / "assets" / "audios"))
 ).expanduser()
 
 # --- Audio mapping ---
@@ -149,14 +149,3 @@ def play_audio_alert(
         else:
             subprocess.Popen(cmd2, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return {"played": True, "player": cmd2[0], "file": str(p), "mode": "async", "emergency_type": em_type}
-
-
-# Optional quick self-test (run: python3 audio_alert.py)
-if __name__ == "__main__":
-    print("PROJECT_ROOT =", PROJECT_ROOT)
-    print("AUDIO_DIR    =", AUDIO_DIR)
-
-    print(play_audio_alert({"emergency_type": "personal"}, block=False))
-    time.sleep(3)
-    print(play_audio_alert({"emergency_type": "mass"}, block=False))
-    time.sleep(8)
