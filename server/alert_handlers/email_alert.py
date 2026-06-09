@@ -4,7 +4,7 @@ from email.message import EmailMessage
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
-# 读取 ~/.env（你已经配置好了）
+# Load SMTP credentials from ~/.env
 load_dotenv(os.path.expanduser("~/.env"))
 
 EMAIL_HOST = os.environ["EMAIL_HOST"]
@@ -12,8 +12,8 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_ADDRESS = os.environ["EMAIL_ADDRESS"]
 EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
 
-# 收件人：建议也放到 env 里，方便改
-# 例如 EMAIL_TO=zl017@uowmail.edu.au,other@example.com
+# Default recipients, comma-separated, e.g. EMAIL_TO=alice@example.com,bob@example.com
+# Per-incident recipients are normally passed in by the caller instead.
 EMAIL_TO = os.environ.get("EMAIL_TO", "").strip()
 
 def _format_subject(event: dict) -> str:
@@ -22,7 +22,7 @@ def _format_subject(event: dict) -> str:
     return f"[ERS] {em_type.upper()} alert from {device_id}"
 
 def _format_body(event: dict) -> str:
-    # 你 event 里常见字段：server_time, pico_ts, device_id, emergency_type, message, from_ip, from_port
+    # Common event fields: server_time, pico_ts, device_id, emergency_type, message, from_ip, from_port
     lines = []
     lines.append("Emergency Response System Alert")
     lines.append("-" * 40)
@@ -44,10 +44,7 @@ def _format_body(event: dict) -> str:
     return "\n".join(lines)
 
 def send_email_alert(event: dict, to_emails: list[str] | None = None) -> None:
-    """
-    发送报警邮件。失败时抛异常，由上层捕获并记录日志。
-    """
-    # 解析收件人
+    """Send an alert email. Raises on failure for the caller to log."""
     recipients: list[str] = []
     if to_emails:
         recipients = to_emails

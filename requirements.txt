@@ -36,6 +36,7 @@ pydeck==0.9.1
 PyJWT==2.10.1
 pyserial==3.5
 python-dateutil==2.9.0.post0
+python-dotenv
 python-engineio==4.12.2
 python-socketio==5.13.0
 pytz==2025.2
@@ -44,9 +45,11 @@ requests==2.32.5
 rpds-py==0.30.0
 simple-websocket==1.1.0
 six==1.17.0
+smbus2  # Raspberry Pi only: I2C relay HAT control (server/alert_handlers/relay_alert.py)
 smmap==5.0.2
 streamlit==1.54.0
 streamlit-autorefresh==1.0.1
+streamlit-image-coordinates
 tenacity==9.1.4
 toml==0.10.2
 tornado==6.5.4
