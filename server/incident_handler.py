@@ -91,14 +91,25 @@ def _dispatch_audio(incident: dict, em_type: str, when: str):
 def _dispatch_email(incident: dict, event: dict, em_type: str, when: str):
     log_event({"server_time": when, "type": "email_send_start", "em_type": em_type})
     try:
-        send_email_alert(event, to_emails=get_email_recipients(em_type))
+        recipients = get_email_recipients(em_type)
+
+        log_event({
+            "server_time": when,
+            "type": "email_recipients_debug",
+            "em_type": em_type,
+            "recipients": recipients,
+            "recipients_type": type(recipients).__name__,
+        })
+
+        send_email_alert(event, to_emails=recipients)
+
         log_event({"server_time": when, "type": "email_send_ok"})
         incident["email_status"] = "ok"
     except Exception as e:
         log_event({"server_time": when, "type": "email_failed", "error": str(e)})
         incident["email_status"] = "failed"
         incident["email_error"] = str(e)
-
+        
 
 def _dispatch_sms(incident: dict, event: dict, em_type: str, when: str):
     log_event({"server_time": when, "type": "sms_send_start", "em_type": em_type})

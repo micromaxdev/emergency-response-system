@@ -18,9 +18,17 @@ Responsibilities are split across sibling modules:
     tcp_server        - the listening socket
 """
 
+
 from database import init_db
 from tcp_server import start_server
+from ble_location_runtime import start_ble_location_runtime
 
 if __name__ == "__main__":
     init_db()
+
+    # Start BLE Gateway MQTT listener in the background.
+    # This keeps the latest RSSI cache ready for emergency location lookup.
+    start_ble_location_runtime()
+    print("[BLE] BLE location runtime started")
+
     start_server()
