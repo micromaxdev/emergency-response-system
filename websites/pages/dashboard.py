@@ -5,6 +5,8 @@ pages/dashboard.py — Live incident dashboard, system status, test drill, reten
 import streamlit as st
 import socket, json, os, sys
 from datetime import datetime, timedelta
+from PIL import Image 
+import plotly.express as px
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
@@ -16,7 +18,7 @@ ers.autorefresh()
 if os.path.exists(ers.DB_PATH):
     ers.init_extra_tables()
 
-# ── Session state ─────────────────────────────────────────────────────────────
+# -- Session state -------------------------------------------------------------
 if "drill_enabled" not in st.session_state:
     st.session_state.drill_enabled = True
 if "drill_result" not in st.session_state:
@@ -26,7 +28,7 @@ if "purge_confirm" not in st.session_state:
 if "purge_result" not in st.session_state:
     st.session_state.purge_result = None
 
-# ── TCP drill ─────────────────────────────────────────────────────────────────
+# -- TCP drill -----------------------------------------------------------------
 def trigger_drill():
     payload = {
         "emergency": True,
@@ -48,7 +50,7 @@ def trigger_drill():
     except Exception as e:
         return "error", str(e)
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+# -- Sidebar -------------------------------------------------------------------
 with st.sidebar:
     st.markdown(
         '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>',
@@ -84,11 +86,11 @@ with st.sidebar:
     st.markdown("---")
     st.caption(f"Retention: `{ers.RETENTION_DAYS} days`")
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# -- Main ----------------------------------------------------------------------
 st.markdown(ers.ers_header("Emergency Response System"), unsafe_allow_html=True)
 
 if not os.path.exists(ers.DB_PATH):
-    st.error(f"⚠ Database not found at `{ers.DB_PATH}`. Is the ERS server running?")
+    st.error(f"? Database not found at `{ers.DB_PATH}`. Is the ERS server running?")
     st.stop()
 
 # KPIs
@@ -144,7 +146,7 @@ else:
     <div style="background:rgba(46,196,182,0.08);border:1px solid rgba(46,196,182,0.3);
                 border-radius:6px;padding:12px 18px;margin-bottom:24px;">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#2ec4b6;">
-        ● All alert systems are silent.
+        ? All alert systems are silent.
       </span>
     </div>
     """, unsafe_allow_html=True)
@@ -243,12 +245,124 @@ if comm["state"] == "offline":
 
 st.markdown("---")
 
+
+# Live Emergency Location Map
+st.markdown('<div class="section-title">Live Emergency Location Map</div>', unsafe_allow_html=True)
+
+map_img_path = os.path.join(ers.MAP_DIR, "company_map.png")
+current_gws = ers.fetch_all_gw_coords()
+map_meters_wide = ers.fetch_map_scale()
+latest_location = ers.fetch_latest_incident_with_location()
+
+if not os.path.exists(map_img_path):
+    st.info("No map uploaded yet. Please upload a floor plan in Configuration > Dynamic Map & Gateway Setup.")
+else:
+    img = Image.open(map_img_path)
+    img_w, img_h = img.size
+
+    scale = img_w / float(map_meters_wide)
+    real_height_m = img_h / scale
+
+    st.caption(
+        f"Map size: {float(map_meters_wide):.2f} m wide × {real_height_m:.2f} m high"
+    )
+
+    fig = px.imshow(img)
+
+    # Plot configured gateways
+    for gw, pos in current_gws.items():
+        fig.add_scatter(
+            x=[float(pos["x"]) * scale],
+            y=[float(pos["y"]) * scale],
+            mode="markers+text",
+            text=[f"<b>{gw}</b>"],
+            textposition="top center",
+            marker=dict(
+                color="#e74c3c",
+                size=15,
+                symbol="octagon",
+                line=dict(width=2, color="white")
+            ),
+            name=gw
+        )
+
+    # Plot latest emergency location
+    if latest_location:
+        x_m = latest_location["x"]
+        y_m = latest_location["y"]
+
+        fig.add_scatter(
+            x=[x_m * scale],
+            y=[y_m * scale],
+            mode="markers+text",
+            text=[f"?? {latest_location['device_id']}"],
+            textposition="bottom center",
+            marker=dict(
+                color="#0066ff",
+                size=24,
+                symbol="circle",
+                line=dict(width=3, color="white")
+            ),
+            name="Latest Emergency Location",
+            hovertemplate=(
+                "<b>Latest Emergency</b><br>"
+                "Device: %{customdata[0]}<br>"
+                "Type: %{customdata[1]}<br>"
+                "Trigger: %{customdata[2]}<br>"
+                "X: %{customdata[3]:.2f} m<br>"
+                "Y: %{customdata[4]:.2f} m<br>"
+                "Time: %{customdata[5]}<extra></extra>"
+            ),
+            customdata=[[
+                latest_location["device_id"],
+                latest_location["emergency_type"],
+                latest_location["trigger_source"],
+                x_m,
+                y_m,
+                latest_location["server_time"],
+            ]]
+        )
+
+        st.success(
+            f"Latest emergency location: "
+            f"{latest_location['device_id']} "
+            f"at X={x_m:.2f} m, Y={y_m:.2f} m"
+        )
+
+        loc_c1, loc_c2, loc_c3, loc_c4 = st.columns(4)
+        loc_c1.metric("Device", latest_location["device_id"])
+        loc_c2.metric("Type", latest_location["emergency_type"])
+        loc_c3.metric("X Position", f"{x_m:.2f} m")
+        loc_c4.metric("Y Position", f"{y_m:.2f} m")
+
+    else:
+        st.info("No incident with estimated location has been recorded yet.")
+
+    fig.update_layout(
+        showlegend=False,
+        margin=dict(l=0, r=0, t=0, b=0),
+        xaxis=dict(
+            visible=True,
+            title=f"Map width: {float(map_meters_wide):.2f} m"
+        ),
+        yaxis=dict(
+            visible=True,
+            autorange="reversed"
+        )
+    )
+
+    st.plotly_chart(fig, width="stretch")
+
+st.markdown("---")
+
+
+
 # Test Drill
 st.markdown('<div class="section-title">Test Drill</div>', unsafe_allow_html=True)
 if st.session_state.drill_result == "ok":
     st.markdown("""
     <div class="drill-alert">
-      <strong>⚠ TEST DRILL TRIGGERED</strong><br>
+      <strong>? TEST DRILL TRIGGERED</strong><br>
       Payload sent — full mass emergency workflow is running on the server.<br>
       Audio · Email · SMS · Relay (120s) are all active. This is a drill.
     </div>""", unsafe_allow_html=True)
@@ -288,13 +402,13 @@ st.markdown(f"""
     &nbsp;·&nbsp; Cutoff: <strong style="color:#111;">{cutoff_display}</strong>
   </div>
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:{'#e63946' if purgeable > 0 else '#2ec4b6'};">
-    {'⚠ ' + str(purgeable) + ' incident(s) older than ' + str(ers.RETENTION_DAYS) + ' days are eligible for deletion.' if purgeable > 0 else '● All incidents are within the retention window.'}
+    {'? ' + str(purgeable) + ' incident(s) older than ' + str(ers.RETENTION_DAYS) + ' days are eligible for deletion.' if purgeable > 0 else '? All incidents are within the retention window.'}
   </div>
 </div>""", unsafe_allow_html=True)
 
 if st.session_state.purge_result:
     deleted, when = st.session_state.purge_result
-    st.success(f"✓ Purged {deleted} incident(s) older than {when}. Database vacuumed.")
+    st.success(f"? Purged {deleted} incident(s) older than {when}. Database vacuumed.")
     if st.button("Dismiss", key="dismiss_purge"):
         st.session_state.purge_result = None
         st.rerun()
@@ -317,7 +431,7 @@ else:
     col_yes, col_no = st.columns(2)
     with col_yes:
         if st.button(
-            "✓  YES, DELETE PERMANENTLY",
+            "?  YES, DELETE PERMANENTLY",
             width="stretch",
             type="primary",
             key="confirm_delete_old_incidents"
@@ -327,7 +441,7 @@ else:
             st.session_state.purge_confirm = False
             st.rerun()
     with col_no:
-        if st.button("✕  CANCEL", width="stretch", key="cancel_delete_old_incidents"):
+        if st.button("?  CANCEL", width="stretch", key="cancel_delete_old_incidents"):
             st.session_state.purge_confirm = False
             st.rerun()
 
@@ -380,10 +494,10 @@ else:
         ts = (inc.get("server_time") or "—")[:16]
         alerts = (
             ers.pill(inc.get("audio_status"), f"{inc.get('audio_status') or '—'}") + " " +
-            ers.pill(inc.get("email_status"), f"✉ {inc.get('email_status') or '—'}") + " " +
+            ers.pill(inc.get("email_status"), f"? {inc.get('email_status') or '—'}") + " " +
             ers.pill(inc.get("sms_status"), f"{inc.get('sms_status') or '—'}")
         )
-        relay = ers.pill(inc.get("relay_status"), f"⚡ {inc.get('relay_status') or '—'}")
+        relay = ers.pill(inc.get("relay_status"), f"? {inc.get('relay_status') or '—'}")
 
         st.markdown(f"""
         <div class="inc-row {ers.row_cls(em, src)}">

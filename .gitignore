@@ -205,12 +205,18 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-server/emergency_log.jsonl
-data/ers.sqlite
-logs/emergency_log.jsonl
-data/ers.sqlite
-logs/emergency_log.jsonl
-data/ers.sqlite
+# Runtime data, logs, and DB (regenerated at runtime)
 data/*.sqlite
-logs/
 server/*.sqlite.bak
+logs/
+server/emergency_log.jsonl
+
+# macOS junk
+.DS_Store
+
+# Editor / runtime droppings
+**/nohup.out
+
+# Hardware build artifacts and CAD design (kept on disk, not in version control)
+sx1302_hal_rpi5-master/
+schematics/

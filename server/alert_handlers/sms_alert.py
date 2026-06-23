@@ -14,7 +14,31 @@ def _format_sms(event: dict) -> str:
     device = event.get("device_id") or "unknown_device"
     msg = event.get("message") or "EMERGENCY"
     t = event.get("server_time") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return f"[ERS {em_type}] {msg}\nDevice: {device}\nTime: {t}"
+
+    # Get room/location information if attached by incident_handler._attach_location()
+    location = event.get("estimated_location") or {}
+
+    room_name = (
+        location.get("room_name")
+        or event.get("room_name")
+        or "Unknown area"
+    )
+
+    x = location.get("x")
+    y = location.get("y")
+
+    body_lines = [
+        f"[ERS {em_type}] {msg}",
+        f"Room: {room_name}",
+        f"Device: {device}",
+        f"Time: {t}",
+    ]
+
+    # Optional: include coordinates if available
+    if x is not None and y is not None:
+        body_lines.append(f"Location: x={x}, y={y}")
+
+    return "\n".join(body_lines)
 
 def _parse_recipients(raw: str) -> list[str]:
     """
