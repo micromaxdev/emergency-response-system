@@ -1691,3 +1691,83 @@
 {"server_time": "2026-06-16 16:34:37", "type": "sqlite_incident_ok"}
 {"server_time": "2026-06-16 16:38:02", "type": "payload_received", "raw": {"timestamp_ms": 4514558, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 100.0, "battery_v": 4.204}}
 {"server_time": "2026-06-16 16:38:02", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc25932", "topic": "/gw/ac233fc25932/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc26ecb", "topic": "/gw/ac233fc26ecb/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc26ecc", "topic": "/gw/ac233fc26ecc/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "2805a55eedec", "topic": "/MKGW3/2805a55eedec/send"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc25932", "topic": "/gw/ac233fc25932/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc26ecb", "topic": "/gw/ac233fc26ecb/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc26ecc", "topic": "/gw/ac233fc26ecc/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "2805a55eedec", "topic": "/MKGW3/2805a55eedec/send"}
+{"server_time": "2026-06-23 10:55:01", "type": "payload_received", "raw": {"timestamp_ms": 9744, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 100.0, "battery_v": 4.224}}
+{"server_time": "2026-06-23 10:55:01", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 10:55:39", "type": "payload_received", "raw": {"timestamp_ms": 10059, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 100.0, "battery_v": 4.224}}
+{"server_time": "2026-06-23 10:55:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 10:56:39", "type": "payload_received", "raw": {"timestamp_ms": 14357, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 100.0, "battery_v": 4.224}}
+{"server_time": "2026-06-23 10:56:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 11:12:13", "type": "payload_received", "raw": {"timestamp_ms": 918420, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.50004, "battery_v": 4.196}}
+{"server_time": "2026-06-23 11:12:13", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 11:26:39", "type": "payload_received", "raw": {"timestamp_ms": 1818460, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.00008, "battery_v": 4.1920004}}
+{"server_time": "2026-06-23 11:26:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 11:41:39", "type": "payload_received", "raw": {"timestamp_ms": 2718479, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.50004, "battery_v": 4.196}}
+{"server_time": "2026-06-23 11:41:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 11:56:39", "type": "payload_received", "raw": {"timestamp_ms": 3618480, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.50004, "battery_v": 4.196}}
+{"server_time": "2026-06-23 11:56:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:11:39", "type": "payload_received", "raw": {"timestamp_ms": 4518521, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.50004, "battery_v": 4.196}}
+{"server_time": "2026-06-23 12:11:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:26:39", "type": "payload_received", "raw": {"timestamp_ms": 5418550, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.50004, "battery_v": 4.196}}
+{"server_time": "2026-06-23 12:26:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:41:39", "type": "payload_received", "raw": {"timestamp_ms": 6318582, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.50004, "battery_v": 4.196}}
+{"server_time": "2026-06-23 12:41:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc25932", "topic": "/gw/ac233fc25932/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc26ecb", "topic": "/gw/ac233fc26ecb/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "ac233fc26ecc", "topic": "/gw/ac233fc26ecc/status"}
+{"type": "ble_mqtt_subscribed", "gateway_id": "2805a55eedec", "topic": "/MKGW3/2805a55eedec/send"}
+{"server_time": "2026-06-23 12:52:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 26880, "seq": 26880, "source": "lora"}}
+{"server_time": "2026-06-23 12:52:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:53:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 56906, "seq": 56906, "source": "lora"}}
+{"server_time": "2026-06-23 12:53:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:53:15", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 1, "emergency": true, "emergency_type": "mass", "emergency_message": "MASS EMERGENCY TRIGGERED (5 rapid presses)", "timestamp_ms": 2342, "seq": 2342, "source": "lora"}}
+{"server_time": "2026-06-23 12:53:15", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": true}
+{"server_time": "2026-06-23 12:53:15", "type": "location_skipped", "reason": "No fresh BLE gateway RSSI available", "ble_mac": "pico_test_01"}
+{"server_time": "2026-06-23 12:53:15", "device_id": "PICO_TEST_01", "emergency_type": "mass", "message": "MASS EMERGENCY TRIGGERED (5 rapid presses)", "from_ip": "127.0.0.1", "from_port": 60844, "pico_ts": null, "triggered_by": "Skylar Li (Admin)", "raw": {"device_id": "PICO_TEST_01", "event_code": 1, "emergency": true, "emergency_type": "mass", "emergency_message": "MASS EMERGENCY TRIGGERED (5 rapid presses)", "timestamp_ms": 2342, "seq": 2342, "source": "lora"}}
+{"server_time": "2026-06-23 12:53:15", "type": "audio_loop_queued", "emergency_type": "mass"}
+{"server_time": "2026-06-23 12:53:15", "type": "email_send_start", "em_type": "mass"}
+{"server_time": "2026-06-23 12:53:15", "type": "audio_loop_start", "file": "/home/micromax/emergency-response-system/assets/audios/mass-emergency-alarm.mp3"}
+{"server_time": "2026-06-23 12:53:15", "type": "email_recipients_debug", "em_type": "mass", "recipients": ["thomasspeer2004@icloud.com", "zl017@uowmail.edu.au"], "recipients_type": "list"}
+{"server_time": "2026-06-23 12:53:15", "type": "email_send_ok"}
+{"server_time": "2026-06-23 12:53:15", "type": "sms_send_start", "em_type": "mass"}
+{"server_time": "2026-06-23 12:53:15", "type": "sms_send_ok", "result": {"count": 2, "results": [{"sid": "SM89b2a3d678d5352b22189cf4b55f9ec7", "to": "+61401421279", "status": "accepted"}, {"sid": "SMb40ad362437b332094f420aeaf8ee5f4", "to": "+61420858922", "status": "accepted"}]}}
+{"server_time": "2026-06-23 12:53:15", "type": "relay_loop_queued"}
+{"server_time": "2026-06-23 12:53:18", "type": "relay_loop_start"}
+{"server_time": "2026-06-23 12:53:15", "type": "sqlite_incident_ok"}
+{"server_time": "2026-06-23 12:53:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 21401, "seq": 21401, "source": "lora"}}
+{"server_time": "2026-06-23 12:53:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:54:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 51448, "seq": 51448, "source": "lora"}}
+{"server_time": "2026-06-23 12:54:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:54:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 15930, "seq": 15930, "source": "lora"}}
+{"server_time": "2026-06-23 12:54:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:55:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 45947, "seq": 45947, "source": "lora"}}
+{"server_time": "2026-06-23 12:55:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:55:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 10427, "seq": 10427, "source": "lora"}}
+{"server_time": "2026-06-23 12:55:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:56:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 40464, "seq": 40464, "source": "lora"}}
+{"server_time": "2026-06-23 12:56:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:56:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 4928, "seq": 4928, "source": "lora"}}
+{"server_time": "2026-06-23 12:56:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:56:39", "type": "payload_received", "raw": {"timestamp_ms": 7218609, "device_id": "PICO_TEST_01", "emergency": false, "battery_pct": 99.00008, "battery_v": 4.1920004}}
+{"server_time": "2026-06-23 12:56:39", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:57:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 34966, "seq": 34966, "source": "lora"}}
+{"server_time": "2026-06-23 12:57:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:57:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 64988, "seq": 64988, "source": "lora"}}
+{"server_time": "2026-06-23 12:57:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:58:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 29476, "seq": 29476, "source": "lora"}}
+{"server_time": "2026-06-23 12:58:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:58:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 59492, "seq": 59492, "source": "lora"}}
+{"server_time": "2026-06-23 12:58:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:59:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 23978, "seq": 23978, "source": "lora"}}
+{"server_time": "2026-06-23 12:59:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 12:59:34", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 54002, "seq": 54002, "source": "lora"}}
+{"server_time": "2026-06-23 12:59:34", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
+{"server_time": "2026-06-23 13:00:04", "type": "payload_received", "raw": {"device_id": "PICO_TEST_01", "event_code": 99, "emergency": false, "emergency_type": "heartbeat", "emergency_message": "HEARTBEAT", "timestamp_ms": 18510, "seq": 18510, "source": "lora"}}
+{"server_time": "2026-06-23 13:00:04", "type": "em_flag_debug", "device_id": "PICO_TEST_01", "emergency_value": false}
