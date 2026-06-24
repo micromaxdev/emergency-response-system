@@ -174,10 +174,23 @@ def _find_ble_mac(payload: dict):
 
 
 def safe_estimate_location(payload: dict, now_str: str):
-    """Estimate location from BLE MQTT cache using BLE MAC in payload."""
+    """Estimate location from BLE MQTT cache, falling back to payload gateways."""
     ble_mac = _find_ble_mac(payload)
 
     if not ble_mac:
+        payload_location = _estimate_from_payload_gateways(payload)
+        if payload_location:
+            log_event({
+                "server_time": now_str,
+                "type": "location_estimated",
+                "source": "payload_gateways",
+                "x": payload_location.get("x"),
+                "y": payload_location.get("y"),
+                "gateways_used": payload_location.get("gateways_used", []),
+                "distance_errors": payload_location.get("distance_errors", []),
+            })
+            return payload_location
+
         log_event({
             "server_time": now_str,
             "type": "location_skipped",
@@ -187,6 +200,21 @@ def safe_estimate_location(payload: dict, now_str: str):
         return None
 
     if not BLE_LOCATION_AVAILABLE or estimate_location_for_mac is None:
+        payload_location = _estimate_from_payload_gateways(payload)
+        if payload_location:
+            log_event({
+                "server_time": now_str,
+                "type": "location_estimated",
+                "source": "payload_gateways",
+                "reason": "BLE location unavailable",
+                "ble_mac": ble_mac,
+                "x": payload_location.get("x"),
+                "y": payload_location.get("y"),
+                "gateways_used": payload_location.get("gateways_used", []),
+                "distance_errors": payload_location.get("distance_errors", []),
+            })
+            return payload_location
+
         log_event({
             "server_time": now_str,
             "type": "ble_location_unavailable",
@@ -207,6 +235,21 @@ def safe_estimate_location(payload: dict, now_str: str):
         return None
 
     if not location:
+        payload_location = _estimate_from_payload_gateways(payload)
+        if payload_location:
+            log_event({
+                "server_time": now_str,
+                "type": "location_estimated",
+                "source": "payload_gateways",
+                "reason": "No fresh BLE gateway RSSI available",
+                "ble_mac": ble_mac,
+                "x": payload_location.get("x"),
+                "y": payload_location.get("y"),
+                "gateways_used": payload_location.get("gateways_used", []),
+                "distance_errors": payload_location.get("distance_errors", []),
+            })
+            return payload_location
+
         log_event({
             "server_time": now_str,
             "type": "location_skipped",

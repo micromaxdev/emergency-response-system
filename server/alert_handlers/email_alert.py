@@ -3,26 +3,40 @@ import smtplib
 import tempfile
 from email.message import EmailMessage
 from datetime import datetime, timezone
-from dotenv import load_dotenv
+from html import escape
+from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(*_args, **_kwargs):
+        return False
 
-load_dotenv(os.path.expanduser("~/.env"))
+from PIL import Image, ImageDraw, ImageFont
 
-EMAIL_HOST = os.environ["EMAIL_HOST"]
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
-EMAIL_ADDRESS = os.environ["EMAIL_ADDRESS"]
-EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
-EMAIL_TO = os.environ.get("EMAIL_TO", "").strip()
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SERVER_DIR = PROJECT_ROOT / "server"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MAP_FILE = os.path.join(BASE_DIR, "map.png")
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(Path.home() / ".env", override=True)
 
-MAP_WIDTH_M = 17.0
-MAP_HEIGHT_M = 24.0
+MAP_FILE = Path(os.getenv("EMAIL_MAP_FILE", str(PROJECT_ROOT / "assets" / "maps" / "image.png")))
+
+MAP_WIDTH_M = float(os.getenv("EMAIL_MAP_WIDTH_M", "17.0"))
+MAP_HEIGHT_M = float(os.getenv("EMAIL_MAP_HEIGHT_M", "24.0"))
+MAP_MARKER_RADIUS_M = float(os.getenv("EMAIL_MAP_MARKER_RADIUS_M", "0.45"))
+INLINE_MAP_CID = "ers_location_map"
+
+
+def _email_settings() -> dict:
+    return {
+        "host": os.environ.get("EMAIL_HOST", ""),
+        "port": int(os.environ.get("EMAIL_PORT", "587")),
+        "address": os.environ.get("EMAIL_ADDRESS", "ers-alerts@example.local"),
+        "password": os.environ.get("EMAIL_PASSWORD", ""),
+        "fallback_to": os.environ.get("EMAIL_TO", "").strip(),
+        "dry_run_file": os.environ.get("EMAIL_DRY_RUN_FILE", "").strip(),
+    }
 
 
 def _parse_email_recipients(raw) -> list[str]:
@@ -95,16 +109,16 @@ def _format_body_text(event: dict) -> str:
 
 
 def _format_body_html(event: dict, show_inline_map: bool) -> str:
-    server_time = event.get("server_time") or datetime.now(timezone.utc).isoformat()
+    server_time = escape(str(event.get("server_time") or datetime.now(timezone.utc).isoformat()))
     location = _get_location(event)
 
-    room_name = location.get("room_name") or event.get("room_name") or "Unknown area"
+    room_name = escape(str(location.get("room_name") or event.get("room_name") or "Unknown area"))
     x = location.get("x")
     y = location.get("y")
 
     coord_html = ""
     if x is not None and y is not None:
-        coord_html = f"<p><b>Coordinates:</b> x={x}, y={y}</p>"
+        coord_html = f"<p><b>Coordinates:</b> x={escape(str(x))}, y={escape(str(y))}</p>"
 
     map_html = ""
     if show_inline_map:
@@ -118,11 +132,11 @@ def _format_body_html(event: dict, show_inline_map: bool) -> str:
       <body>
         <h2>Emergency Response System Alert</h2>
         <p><b>Server Time:</b> {server_time}</p>
-        <p><b>Device ID:</b> {event.get('device_id', '')}</p>
-        <p><b>Emergency Type:</b> {event.get('emergency_type', '')}</p>
-        <p><b>Message:</b> {event.get('message', '')}</p>
-        <p><b>Pico Timestamp:</b> {event.get('pico_ts', '')}</p>
-        <p><b>From:</b> {event.get('from_ip', '')}:{event.get('from_port', '')}</p>
+        <p><b>Device ID:</b> {escape(str(event.get('device_id', '')))}</p>
+        <p><b>Emergency Type:</b> {escape(str(event.get('emergency_type', '')))}</p>
+        <p><b>Message:</b> {escape(str(event.get('message', '')))}</p>
+        <p><b>Pico Timestamp:</b> {escape(str(event.get('pico_ts', '')))}</p>
+        <p><b>From:</b> {escape(str(event.get('from_ip', '')))}:{escape(str(event.get('from_port', '')))}</p>
 
         <h3>Estimated Location</h3>
         <p><b>Room Name:</b> {room_name}</p>
@@ -131,59 +145,84 @@ def _format_body_html(event: dict, show_inline_map: bool) -> str:
         {map_html}
 
         <h3>Raw event</h3>
-        <pre>{str(event)}</pre>
+        <pre>{escape(str(event))}</pre>
       </body>
     </html>
     """
     return html
 
 
-def _create_location_map_image(event: dict) -> str | None:
+def _create_location_map_image(event: dict, output_path: str | os.PathLike | None = None) -> str | None:
     location = _get_location(event)
 
-    x = location.get("x")
-    y = location.get("y")
+    try:
+        x = float(location.get("x"))
+        y = float(location.get("y"))
+    except (TypeError, ValueError):
+        return None
+
     room_name = location.get("room_name") or event.get("room_name") or "Unknown area"
     device_id = event.get("device_id", "unknown")
     em_type = event.get("emergency_type", "unknown")
 
-    if x is None or y is None:
-        return None
-
-    if not os.path.exists(MAP_FILE):
+    if not MAP_FILE.exists():
         print(f"[EMAIL MAP] map file not found: {MAP_FILE}")
         return None
 
     try:
-        img = mpimg.imread(MAP_FILE)
+        img = Image.open(MAP_FILE).convert("RGBA")
+        draw = ImageDraw.Draw(img, "RGBA")
+        width_px, height_px = img.size
 
-        fig, ax = plt.subplots(figsize=(7, 10))
-        ax.imshow(img, extent=[0, MAP_WIDTH_M, 0, MAP_HEIGHT_M], origin="upper")
+        x_px = max(0, min(width_px, int((x / MAP_WIDTH_M) * width_px)))
+        y_px = max(0, min(height_px, int(height_px - ((y / MAP_HEIGHT_M) * height_px))))
+        radius_px = max(12, int((MAP_MARKER_RADIUS_M / MAP_WIDTH_M) * width_px))
 
-        ax.scatter([x], [y], s=220, marker="*", edgecolors="black", linewidths=1.5, color="red")
-
-        ax.annotate(
-            f"{em_type.upper()} alert\n{room_name}\n({x}, {y})",
-            xy=(x, y),
-            xytext=(x + 0.5, y + 0.8),
-            arrowprops=dict(arrowstyle="->", linewidth=1.5),
-            fontsize=10,
-            bbox=dict(boxstyle="round,pad=0.4", fc="white", alpha=0.85),
+        draw.ellipse(
+            (x_px - radius_px, y_px - radius_px, x_px + radius_px, y_px + radius_px),
+            fill=(229, 57, 53, 190),
+            outline=(0, 0, 0, 255),
+            width=4,
+        )
+        center_radius = max(3, radius_px // 5)
+        draw.ellipse(
+            (
+                x_px - center_radius,
+                y_px - center_radius,
+                x_px + center_radius,
+                y_px + center_radius,
+            ),
+            fill=(255, 255, 255, 255),
+            outline=(0, 0, 0, 255),
+            width=1,
         )
 
-        ax.set_title(f"ERS Emergency Location - {device_id}")
-        ax.set_xlabel("x position")
-        ax.set_ylabel("y position")
-        ax.set_xlim(0, MAP_WIDTH_M)
-        ax.set_ylim(0, MAP_HEIGHT_M)
-        ax.grid(True, alpha=0.3)
+        label = f"{str(em_type).upper()} alert\n{room_name}\n({x:.2f}, {y:.2f})"
+        font = ImageFont.load_default()
+        text_box = draw.multiline_textbbox((0, 0), label, font=font, spacing=4)
+        label_w = text_box[2] - text_box[0] + 16
+        label_h = text_box[3] - text_box[1] + 14
+        label_x = min(max(8, x_px + radius_px + 10), max(8, width_px - label_w - 8))
+        label_y = min(max(8, y_px - label_h - 10), max(8, height_px - label_h - 8))
 
-        tmp = tempfile.NamedTemporaryFile(prefix="ers_location_", suffix=".png", delete=False)
-        tmp_path = tmp.name
-        tmp.close()
+        draw.line((x_px, y_px, label_x, label_y + label_h), fill=(0, 0, 0, 255), width=3)
+        draw.rounded_rectangle(
+            (label_x, label_y, label_x + label_w, label_y + label_h),
+            radius=6,
+            fill=(255, 255, 255, 225),
+            outline=(0, 0, 0, 200),
+            width=2,
+        )
+        draw.multiline_text((label_x + 8, label_y + 7), label, fill=(0, 0, 0, 255), font=font, spacing=4)
 
-        fig.savefig(tmp_path, dpi=150, bbox_inches="tight")
-        plt.close(fig)
+        if output_path is None:
+            tmp = tempfile.NamedTemporaryFile(prefix="ers_location_", suffix=".png", delete=False)
+            tmp_path = tmp.name
+            tmp.close()
+        else:
+            tmp_path = str(output_path)
+
+        img.save(tmp_path, format="PNG")
 
         return tmp_path
 
@@ -192,13 +231,14 @@ def _create_location_map_image(event: dict) -> str | None:
         return None
 
 
-def send_email_alert(event: dict, to_emails: list[str] | None = None) -> None:
+def build_email_message(event: dict, to_emails: list[str] | None = None) -> EmailMessage:
+    settings = _email_settings()
     recipients = []
 
     if to_emails:
         recipients = _parse_email_recipients(to_emails)
-    elif EMAIL_TO:
-        recipients = _parse_email_recipients(EMAIL_TO)
+    elif settings["fallback_to"]:
+        recipients = _parse_email_recipients(settings["fallback_to"])
 
     if not recipients:
         raise RuntimeError("EMAIL_TO is empty. Set EMAIL_TO in ~/.env comma-separated.")
@@ -207,7 +247,7 @@ def send_email_alert(event: dict, to_emails: list[str] | None = None) -> None:
     print(f"[EMAIL DEBUG] subject={_format_subject(event)}")
 
     msg = EmailMessage()
-    msg["From"] = EMAIL_ADDRESS
+    msg["From"] = settings["address"]
     msg["To"] = ", ".join(recipients)
     msg["Subject"] = _format_subject(event)
 
@@ -234,21 +274,41 @@ def send_email_alert(event: dict, to_emails: list[str] | None = None) -> None:
             img_data,
             maintype="image",
             subtype="png",
-            cid="<ers_location_map>",
+            cid=f"<{INLINE_MAP_CID}>",
             disposition="inline",
             filename="ers_emergency_location.png",
         )
 
+    if map_path and os.path.exists(map_path):
+        try:
+            os.remove(map_path)
+        except Exception:
+            pass
+
+    return msg
+
+
+def send_email_alert(event: dict, to_emails: list[str] | None = None) -> None:
+    settings = _email_settings()
+    msg = build_email_message(event, to_emails=to_emails)
+
+    if settings["dry_run_file"]:
+        dry_run_path = Path(settings["dry_run_file"])
+        dry_run_path.parent.mkdir(parents=True, exist_ok=True)
+        dry_run_path.write_bytes(msg.as_bytes())
+        print(f"[EMAIL DRY RUN] wrote email message to {dry_run_path}")
+        return
+
+    missing = [name for name in ("host", "address", "password") if not settings[name]]
+    if missing:
+        raise RuntimeError(f"Missing email setting(s): {', '.join(missing)}")
+
     try:
-        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=20) as smtp:
+        with smtplib.SMTP(settings["host"], settings["port"], timeout=20) as smtp:
             smtp.ehlo()
             smtp.starttls()
             smtp.ehlo()
-            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            smtp.login(settings["address"], settings["password"])
             smtp.send_message(msg)
-    finally:
-        if map_path and os.path.exists(map_path):
-            try:
-                os.remove(map_path)
-            except Exception:
-                pass
+    except smtplib.SMTPException as e:
+        raise RuntimeError(f"SMTP email send failed: {e}") from e
