@@ -21,7 +21,6 @@ import utils as ers
 # ════════════════════════════════════════════════════════════════════════════════
 st.set_page_config(
     page_title="ERS",
-    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
 )

@@ -11,7 +11,7 @@ import plotly.express as px
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
 
-st.set_page_config(page_title="ERS · Dashboard", layout="wide")
+st.set_page_config(page_title="ERS - Dashboard", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -52,18 +52,11 @@ def trigger_drill():
 
 # -- Sidebar -------------------------------------------------------------------
 with st.sidebar:
-    st.markdown(
-        '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:3px;margin-bottom:20px;">DASHBOARD</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown(ers.sidebar_title("Dashboard"), unsafe_allow_html=True)
     st.markdown("---")
 
     st.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Drill Controls</div>',
+        ers.section_caption("Drill Controls"),
         unsafe_allow_html=True
     )
     drill_toggle = st.toggle("Test Drill Enabled", value=st.session_state.drill_enabled)
@@ -73,7 +66,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Display</div>',
+        ers.section_caption("Display"),
         unsafe_allow_html=True
     )
     type_filter = st.multiselect(
@@ -90,7 +83,7 @@ with st.sidebar:
 st.markdown(ers.ers_header("Emergency Response System"), unsafe_allow_html=True)
 
 if not os.path.exists(ers.DB_PATH):
-    st.error(f"? Database not found at `{ers.DB_PATH}`. Is the ERS server running?")
+    st.error(f"Database not found at `{ers.DB_PATH}`. Is the ERS server running?")
     st.stop()
 
 # KPIs
@@ -146,7 +139,7 @@ else:
     <div style="background:rgba(46,196,182,0.08);border:1px solid rgba(46,196,182,0.3);
                 border-radius:6px;padding:12px 18px;margin-bottom:24px;">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#2ec4b6;">
-        ? All alert systems are silent.
+        All alert systems are silent.
       </span>
     </div>
     """, unsafe_allow_html=True)
@@ -295,7 +288,7 @@ else:
             x=[x_m * scale],
             y=[y_m * scale],
             mode="markers+text",
-            text=[f"?? {latest_location['device_id']}"],
+            text=[f"Device {latest_location['device_id']}"],
             textposition="bottom center",
             marker=dict(
                 color="#0066ff",
@@ -362,7 +355,7 @@ st.markdown('<div class="section-title">Test Drill</div>', unsafe_allow_html=Tru
 if st.session_state.drill_result == "ok":
     st.markdown("""
     <div class="drill-alert">
-      <strong>? TEST DRILL TRIGGERED</strong><br>
+      <strong>TEST DRILL TRIGGERED</strong><br>
       Payload sent — full mass emergency workflow is running on the server.<br>
       Audio · Email · SMS · Relay (120s) are all active. This is a drill.
     </div>""", unsafe_allow_html=True)
@@ -402,13 +395,13 @@ st.markdown(f"""
     &nbsp;·&nbsp; Cutoff: <strong style="color:#111;">{cutoff_display}</strong>
   </div>
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:{'#e63946' if purgeable > 0 else '#2ec4b6'};">
-    {'? ' + str(purgeable) + ' incident(s) older than ' + str(ers.RETENTION_DAYS) + ' days are eligible for deletion.' if purgeable > 0 else '? All incidents are within the retention window.'}
+    {str(purgeable) + ' incident(s) older than ' + str(ers.RETENTION_DAYS) + ' days are eligible for deletion.' if purgeable > 0 else 'All incidents are within the retention window.'}
   </div>
 </div>""", unsafe_allow_html=True)
 
 if st.session_state.purge_result:
     deleted, when = st.session_state.purge_result
-    st.success(f"? Purged {deleted} incident(s) older than {when}. Database vacuumed.")
+    st.success(f"Purged {deleted} incident(s) older than {when}. Database vacuumed.")
     if st.button("Dismiss", key="dismiss_purge"):
         st.session_state.purge_result = None
         st.rerun()
@@ -431,7 +424,7 @@ else:
     col_yes, col_no = st.columns(2)
     with col_yes:
         if st.button(
-            "?  YES, DELETE PERMANENTLY",
+            "YES, DELETE PERMANENTLY",
             width="stretch",
             type="primary",
             key="confirm_delete_old_incidents"
@@ -441,7 +434,7 @@ else:
             st.session_state.purge_confirm = False
             st.rerun()
     with col_no:
-        if st.button("?  CANCEL", width="stretch", key="cancel_delete_old_incidents"):
+        if st.button("CANCEL", width="stretch", key="cancel_delete_old_incidents"):
             st.session_state.purge_confirm = False
             st.rerun()
 
@@ -493,11 +486,11 @@ else:
         msg = (inc.get("message") or "—")[:50]
         ts = (inc.get("server_time") or "—")[:16]
         alerts = (
-            ers.pill(inc.get("audio_status"), f"{inc.get('audio_status') or '—'}") + " " +
-            ers.pill(inc.get("email_status"), f"? {inc.get('email_status') or '—'}") + " " +
-            ers.pill(inc.get("sms_status"), f"{inc.get('sms_status') or '—'}")
+            ers.channel_pill("Audio", inc.get("audio_status")) + " " +
+            ers.channel_pill("Email", inc.get("email_status")) + " " +
+            ers.channel_pill("SMS", inc.get("sms_status"))
         )
-        relay = ers.pill(inc.get("relay_status"), f"? {inc.get('relay_status') or '—'}")
+        relay = ers.channel_pill("Relay", inc.get("relay_status"))
 
         st.markdown(f"""
         <div class="inc-row {ers.row_cls(em, src)}">
@@ -512,9 +505,4 @@ else:
           <span class="mono" style="min-width:130px">{ts}</span>
         </div>""", unsafe_allow_html=True)
 
-st.markdown(f"""
-<div style="margin-top:40px;padding-top:14px;border-top:1px solid #1e2530;
-            font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
-            letter-spacing:2px;text-align:center;">
-  ERS · DASHBOARD · retention={ers.RETENTION_DAYS}d
-</div>""", unsafe_allow_html=True)
+st.markdown(ers.footer(f"ERS / DASHBOARD / retention={ers.RETENTION_DAYS}d"), unsafe_allow_html=True)

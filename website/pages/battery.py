@@ -16,8 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
 
 st.set_page_config(
-    page_title="ERS · Battery Manager",
-    page_icon="🔋",
+    page_title="ERS - Battery Manager",
     layout="wide",
 )
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
@@ -87,7 +86,12 @@ st.markdown("""
     background: rgba(230,57,70,0.08);
     border: 2px solid #e63946;
 }
-.power-banner-icon { font-size: 2rem; }
+.power-banner-icon {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
 .power-banner-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.3rem; letter-spacing: 4px;
@@ -175,21 +179,10 @@ def _get_charging(ac_ok, capacity):
 last_read = ers.get_control("ups_updated") or "—"
 
 with st.sidebar:
-    st.markdown(
-        '<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;'
-        'letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;'
-        'color:#586069;letter-spacing:3px;margin-bottom:20px;">BATTERY MANAGER</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(ers.sidebar_title("Battery Manager"), unsafe_allow_html=True)
     st.markdown("---")
     st.markdown(
-        '<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;'
-        'color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">'
-        'UPS Info</div>',
+        ers.section_caption("UPS Info"),
         unsafe_allow_html=True,
     )
     st.markdown(
@@ -225,7 +218,7 @@ st.markdown(ers.ers_header("Battery Manager"), unsafe_allow_html=True)
 
 # ── Hardware-warning banner (only if something failed to init) ────────────────
 if _hw_errors:
-    errs_joined = "<br>".join(f"⚠ {e}" for e in _hw_errors)
+    errs_joined = "<br>".join(f"Warning: {e}" for e in _hw_errors)
     st.markdown(
         f'<div class="hw-error-box">'
         f'<strong style="letter-spacing:2px;">HARDWARE WARNING</strong><br>'
@@ -249,12 +242,12 @@ st.markdown(f'<div class="ts-line">Last read: {now_str}</div>', unsafe_allow_htm
 # ════════════════════════════════════════════════════════════════════════════════
 if ac_ok is None:
     banner_cls   = "fail"
-    banner_icon  = "❓"
+    banner_icon  = "Unknown"
     banner_title = "POWER STATUS UNKNOWN"
     banner_sub   = f"Waiting for first reading from UPS monitor server. Last read: {last_read}"
 elif ac_ok:
     banner_cls   = "ok"
-    banner_icon  = "✅"
+    banner_icon  = "OK"
     banner_title = "AC POWER: OK"
     banner_sub   = "Mains supply present · Power adapter functioning normally."
 else:
@@ -286,7 +279,7 @@ def _fmt(val, decimals=3, unit="", fallback="—"):
 def _bool_pill(val, true_label, false_label, true_color, false_color):
     """Return an HTML pill for a tri-state bool (True/False/None)."""
     if val is None:
-        return '<span class="pill pill-unknown">? UNKNOWN</span>'
+        return '<span class="pill pill-unknown">UNKNOWN</span>'
     if val:
         return f'<span style="font-family:IBM Plex Mono,monospace;font-size:0.75rem;' \
                f'font-weight:600;color:{true_color};">{true_label}</span>'
@@ -301,13 +294,13 @@ cap_num   = capacity if capacity is not None else 0
 cap_color = "green" if cap_num >= 60 else ("amber" if cap_num >= 25 else "red")
 
 chg_display = _bool_pill(charging,
-                          "✔  ENABLED",  "●  DISABLED",
+                          "ENABLED",  "DISABLED",
                           "#2ec4b6",     "#e63946")
 ac_display  = _bool_pill(ac_ok,
-                          "✔  AC OK",    "✕  NO MAINS",
+                          "AC OK",    "NO MAINS",
                           "#2ec4b6",     "#e63946")
 adp_display = _bool_pill(ac_ok,
-                          "✔  ADAPTER OK", "✕  ADAPTER FAILURE",
+                          "ADAPTER OK", "ADAPTER FAILURE",
                           "#2ec4b6",        "#e63946")
 
 st.markdown(f"""
@@ -464,7 +457,7 @@ else:
         display_name = staff_name if staff_name else label
         stale_html = (
             '<span style="font-family:IBM Plex Mono,monospace;font-size:0.58rem;'
-            'color:#f7b731;margin-left:6px;">⚠ STALE</span>'
+            'color:#f7b731;margin-left:6px;">STALE</span>'
             if stale else ""
         )
 
@@ -490,9 +483,4 @@ else:
     st.markdown(cards_html, unsafe_allow_html=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<div style="margin-top:40px;padding-top:14px;border-top:1px solid #1e2530;
-            font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
-            letter-spacing:2px;text-align:center;">
-  ERS · BATTERY MANAGER · X120x UPS HAT · {datetime.now().year}
-</div>""", unsafe_allow_html=True)
+st.markdown(ers.footer(f"ERS / BATTERY MANAGER / X120x UPS HAT / {datetime.now().year}"), unsafe_allow_html=True)

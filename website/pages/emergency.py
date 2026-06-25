@@ -10,7 +10,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
 
-st.set_page_config(page_title="ERS · Emergency Trigger", page_icon="🚨", layout="wide")
+st.set_page_config(page_title="ERS - Emergency Trigger", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -44,8 +44,7 @@ def trigger_real_mass():
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown('<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#e63946;margin-bottom:2px;">ERS</div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:3px;margin-bottom:20px;">EMERGENCY TRIGGER</div>', unsafe_allow_html=True)
+    st.markdown(ers.sidebar_title("Emergency Trigger", danger=True), unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("""
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#586069;line-height:1.8;">
@@ -111,7 +110,7 @@ if st.session_state.em_step == 3:
             st.session_state.em_result = None
             st.rerun()
     else:
-        st.error(f"⚠ Failed to reach server: {st.session_state.em_result}")
+        st.error(f"Failed to reach server: {st.session_state.em_result}")
         if st.button("Reset", width="content"):
             st.session_state.em_step   = 0
             st.session_state.em_result = None
@@ -125,7 +124,7 @@ st.markdown("""
             padding:20px 24px;margin-bottom:32px;">
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;
               color:#e63946;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">
-    ⚠ This is NOT a drill
+    WARNING: This is NOT a drill
   </div>
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#586069;line-height:1.8;">
     Pressing the button below will trigger a <strong style="color:#111;">real mass emergency</strong>
@@ -148,18 +147,18 @@ elif st.session_state.em_step == 1:
     st.warning("Are you sure? This will send real alerts to all configured staff members.")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("✓  YES — THIS IS A REAL EMERGENCY", width="stretch", type="primary"):
+        if st.button("YES - THIS IS A REAL EMERGENCY", width="stretch", type="primary"):
             st.session_state.em_step = 2
             st.rerun()
     with c2:
-        if st.button("✕  CANCEL — DO NOT TRIGGER", width="stretch"):
+        if st.button("CANCEL - DO NOT TRIGGER", width="stretch"):
             st.session_state.em_step = 0
             st.rerun()
 
 # ── Step 2: Final confirmation ────────────────────────────────────────────────
 elif st.session_state.em_step == 2:
     st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Step 3 of 3 — Final confirmation</div>', unsafe_allow_html=True)
-    st.error("⚠ FINAL WARNING — Pressing confirm will immediately activate audio, email, SMS and relay. This cannot be undone.")
+    st.error("FINAL WARNING - Pressing confirm will immediately activate audio, email, SMS and relay. This cannot be undone.")
     c1, c2 = st.columns(2)
     with c1:
         if st.button("CONFIRM — ACTIVATE ALL SYSTEMS NOW", width="stretch", type="primary"):
@@ -168,14 +167,9 @@ elif st.session_state.em_step == 2:
             st.session_state.em_step   = 3
             st.rerun()
     with c2:
-        if st.button("✕  CANCEL — STAND DOWN", width="stretch"):
+        if st.button("CANCEL - STAND DOWN", width="stretch"):
             st.session_state.em_step = 0
             st.rerun()
 
 # ── Footer ────────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<div style="margin-top:60px;padding-top:14px;border-top:1px solid #1e2530;
-            font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
-            letter-spacing:2px;text-align:center;">
-  ERS · MASS EMERGENCY TRIGGER · {ers.SERVER_HOST}:{ers.SERVER_PORT}
-</div>""", unsafe_allow_html=True)
+st.markdown(ers.footer(f"ERS / MASS EMERGENCY TRIGGER / {ers.SERVER_HOST}:{ers.SERVER_PORT}"), unsafe_allow_html=True)

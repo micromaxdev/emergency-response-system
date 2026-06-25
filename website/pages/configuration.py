@@ -27,7 +27,7 @@ if os.path.exists(ers.DB_PATH):
 # --------------------------------------------------------------------------------
 #  2. PAGE SETUP & SESSION STATE
 # --------------------------------------------------------------------------------
-st.set_page_config(page_title="ERS · Configuration", page_icon="⚙️", layout="wide")
+st.set_page_config(page_title="ERS - Configuration", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -44,8 +44,7 @@ if "room_corner_1"    not in st.session_state: st.session_state.room_corner_1   
 if "room_corner_2"    not in st.session_state: st.session_state.room_corner_2    = None
 
 with st.sidebar:
-    st.markdown('<div class="ers-logo" style="font-size:1.8rem; letter-spacing:4px;">ERS</div>', unsafe_allow_html=True)
-    st.markdown('<div class="ers-sub">CONFIGURATION</div>', unsafe_allow_html=True)
+    st.markdown(ers.sidebar_title("Configuration"), unsafe_allow_html=True)
     st.markdown("---")
     st.caption("Sections:")
     st.markdown("- Devices\n- Mass Alerts\n- Personal Alerts\n- Administration Alerts\n- Heartbeat Fail Alerts\n- Audio\n- Map & Gateways")
@@ -53,7 +52,7 @@ with st.sidebar:
 st.markdown(ers.ers_header("Configuration"), unsafe_allow_html=True)
 
 if not os.path.exists(ers.DB_PATH):
-    st.error(f"? Database not found at `{ers.DB_PATH}`. Ensure data/ers.sqlite exists.")
+    st.error(f"Database not found at `{ers.DB_PATH}`. Ensure data/ers.sqlite exists.")
     st.stop()
 
 all_staff = ers.fetch_all_staff()
@@ -66,10 +65,10 @@ staff_options_with_none = {None: "— Unassigned —", **staff_options}
 st.markdown('<div class="section-title">Device Management</div>', unsafe_allow_html=True)
 
 if st.session_state.device_saved:
-    st.success("? Device configuration saved.")
+    st.success("Device configuration saved.")
     st.session_state.device_saved = False
 
-with st.expander("?  Register New Device", expanded=False):
+with st.expander("Register New Device", expanded=False):
     unregistered = ers.fetch_known_device_ids()
     with st.form("add_device_form"):
         c1, c2 = st.columns(2)
@@ -135,30 +134,30 @@ else:
                     )
                 sb1, sb2 = st.columns(2)
                 with sb1:
-                    if st.form_submit_button("? Save", use_container_width=True):
+                    if st.form_submit_button("Save", use_container_width=True):
                         ers.update_device(did, e_label.strip(), e_location.strip(), e_assigned)
                         st.session_state.edit_device_id = None
                         st.session_state.device_saved   = True
                         st.rerun()
                 with sb2:
-                    if st.form_submit_button("? Cancel", use_container_width=True):
+                    if st.form_submit_button("Cancel", use_container_width=True):
                         st.session_state.edit_device_id = None
                         st.rerun()
         elif st.session_state.delete_device_id == did:
             st.warning(f"Remove device **{d['device_id']}**? Incident history is kept.")
             dc1, dc2 = st.columns(2)
             with dc1:
-                if st.button("? Yes, Remove", key=f"devdel_yes_{did}", use_container_width=True, type="primary"):
+                if st.button("Yes, Remove", key=f"devdel_yes_{did}", use_container_width=True, type="primary"):
                     ers.delete_device(did)
                     st.session_state.delete_device_id = None
                     st.rerun()
             with dc2:
-                if st.button("? Cancel", key=f"devdel_no_{did}", use_container_width=True):
+                if st.button("Cancel", key=f"devdel_no_{did}", use_container_width=True):
                     st.session_state.delete_device_id = None
                     st.rerun()
         else:
             assign_pill = (
-                f'<span class="pill pill-ok">?? {d["staff_name"]}</span>'
+                f'<span class="pill pill-ok">Assigned: {d["staff_name"]}</span>'
                 if d.get("assigned_staff_id")
                 else '<span class="pill pill-unknown">— unassigned</span>'
             )
@@ -187,7 +186,7 @@ st.markdown("---")
 st.markdown('<div class="section-title">Mass Emergency Alert Recipients</div>', unsafe_allow_html=True)
 
 if st.session_state.alert_saved:
-    st.success("? Alert assignments updated.")
+    st.success("Alert assignments updated.")
     st.session_state.alert_saved = False
 
 if not all_staff:
@@ -197,7 +196,7 @@ else:
     mc1, mc2 = st.columns(2)
 
     with mc1:
-        st.markdown('? Email — Mass Emergency')
+        st.markdown("**Email - Mass Emergency**")
         with st.form("mass_email_form"):
             mass_email_states = {}
             for s in fresh:
@@ -218,7 +217,7 @@ else:
                 st.rerun()
 
     with mc2:
-        st.markdown('?? SMS — Mass Emergency')
+        st.markdown("**SMS - Mass Emergency**")
         with st.form("mass_sms_form"):
             mass_sms_states = {}
             for s in fresh:
@@ -248,7 +247,7 @@ fresh2 = ers.fetch_all_staff()
 pc1, pc2 = st.columns(2)
 
 with pc1:
-    st.markdown('? Email — Personal Emergency')
+    st.markdown("**Email - Personal Emergency**")
     with st.form("personal_email_form"):
         pers_email_states = {}
         for s in fresh2:
@@ -269,7 +268,7 @@ with pc1:
             st.rerun()
 
 with pc2:
-    st.markdown('?? SMS — Personal Emergency')
+    st.markdown("**SMS - Personal Emergency**")
     with st.form("personal_sms_form"):
         pers_sms_states = {}
         for s in fresh2:
@@ -307,7 +306,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if st.session_state.admin_saved:
-    st.success("? Administration alert assignments updated.")
+    st.success("Administration alert assignments updated.")
     st.session_state.admin_saved = False
 
 admin_staff = ers.fetch_all_staff()
@@ -320,13 +319,13 @@ else:
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
                 letter-spacing:2px;color:#586069;text-transform:uppercase;
                 margin:8px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
-      ?? Battery Alerts — Client Devices &amp; UPS
+      Battery Alerts - Client Devices &amp; UPS
     </div>""", unsafe_allow_html=True)
 
     bat1, bat2 = st.columns(2)
 
     with bat1:
-        st.markdown('? Email — Battery Alerts')
+        st.markdown("**Email - Battery Alerts**")
         with st.form("admin_bat_email_form"):
             bat_email_states = {}
             for s in admin_staff:
@@ -351,7 +350,7 @@ else:
                 st.rerun()
 
     with bat2:
-        st.markdown('?? SMS — Battery Alerts')
+        st.markdown("**SMS - Battery Alerts**")
         with st.form("admin_bat_sms_form"):
             bat_sms_states = {}
             for s in admin_staff:
@@ -385,13 +384,13 @@ else:
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;
                 letter-spacing:2px;color:#586069;text-transform:uppercase;
                 margin:24px 0 14px 0;padding-bottom:6px;border-bottom:1px solid #eee;">
-      ?? Heartbeat Fail Alerts
+      Heartbeat Fail Alerts
     </div>""", unsafe_allow_html=True)
 
     hb1, hb2 = st.columns(2)
 
     with hb1:
-        st.markdown('? Email — Heartbeat Fail')
+        st.markdown("**Email - Heartbeat Fail**")
         with st.form("admin_hb_email_form"):
             hb_email_states = {}
             for s in admin_staff:
@@ -416,7 +415,7 @@ else:
                 st.rerun()
 
     with hb2:
-        st.markdown('?? SMS — Heartbeat Fail')
+        st.markdown("**SMS - Heartbeat Fail**")
         with st.form("admin_hb_sms_form"):
             hb_sms_states = {}
             for s in admin_staff:
@@ -449,13 +448,13 @@ st.markdown('<div class="section-title">Alert Audio Files</div>', unsafe_allow_h
 AUDIO_DIR = ers.AUDIO_DIR
 
 if st.session_state.audio_saved:
-    st.success(f"? Audio files saved to {AUDIO_DIR}")
+    st.success(f"Audio files saved to {AUDIO_DIR}")
     st.session_state.audio_saved = False
 
 ac1, ac2 = st.columns(2)
 
 with ac1:
-    st.markdown('**?? Test / Drill Alert Audio**')
+    st.markdown("**Test / Drill Alert Audio**")
     test_audio = st.file_uploader("Upload test audio", type=["mp3", "wav", "ogg"], key="test_up")
     existing_test = next((f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("test_alert_")), None)
     if test_audio:
@@ -464,7 +463,7 @@ with ac1:
         st.audio(os.path.join(AUDIO_DIR, existing_test))
 
 with ac2:
-    st.markdown('**?? Mass Emergency Alert Audio**')
+    st.markdown("**Mass Emergency Alert Audio**")
     emergency_audio = st.file_uploader("Upload mass emergency audio", type=["mp3", "wav", "ogg"], key="em_up")
     existing_em = next((f for f in sorted(os.listdir(AUDIO_DIR)) if f.startswith("emergency_alert_")), None)
     if emergency_audio:
@@ -472,7 +471,7 @@ with ac2:
     elif existing_em:
         st.audio(os.path.join(AUDIO_DIR, existing_em))
 
-if st.button("?? Save Audio Files", use_container_width=True):
+if st.button("Save Audio Files", use_container_width=True):
     if test_audio:
         for f in os.listdir(AUDIO_DIR):
             if f.startswith("test_alert_"): os.remove(os.path.join(AUDIO_DIR, f))
@@ -505,7 +504,7 @@ with col_map1:
         save_path = os.path.join(ers.MAP_DIR, "company_map.png")
         with open(save_path, "wb") as f:
             f.write(uploaded_map.getbuffer())
-        st.success("? Map saved!")
+        st.success("Map saved.")
         st.rerun()
 
     new_scale = st.number_input(
@@ -522,7 +521,7 @@ with col_map1:
     st.write("---")
     st.markdown("### 2. Manage Gateways")
    
-    with st.expander("? Add New Gateway"):
+    with st.expander("Add New Gateway"):
         cadd1, cadd2 = st.columns([3, 1])
         new_name = cadd1.text_input("Gateway Name", key="new_gw_name")
         if cadd2.button("Add"):
@@ -535,14 +534,14 @@ with col_map1:
     with st.form("gw_dynamic_form"):
         temp_changes = {}
         for gw_id, pos in current_gws.items():
-            st.markdown(f"**?? {gw_id}**")
+            st.markdown(f"**Gateway {gw_id}**")
             cx, cy, cdel = st.columns([2, 2, 1])
             nx = cx.number_input("X (m)", value=float(pos['x']), key=f"x_{gw_id}")
             ny = cy.number_input("Y (m)", value=float(pos['y']), key=f"y_{gw_id}")
-            is_del = cdel.checkbox("???", key=f"del_{gw_id}")
+            is_del = cdel.checkbox("Delete", key=f"del_{gw_id}")
             temp_changes[gw_id] = "DELETE" if is_del else {"x": nx, "y": ny}
        
-        if st.form_submit_button("?? Save All Changes", use_container_width=True):
+        if st.form_submit_button("Save All Changes", use_container_width=True):
             for gid, action in temp_changes.items():
                 if action == "DELETE":
                     ers.delete_gw(gid)
@@ -711,7 +710,7 @@ else:
             f"Y={y_min_m:.2f}–{y_max_m:.2f} m"
         )
 
-        if st.button("?? Save Selected Room Zone", use_container_width=True, key="room_zone_save_selected"):
+        if st.button("Save Selected Room Zone", use_container_width=True, key="room_zone_save_selected"):
             if not room_name.strip():
                 st.error("Please enter a room name before saving.")
             elif x_max_m <= x_min_m or y_max_m <= y_min_m:
@@ -729,69 +728,6 @@ else:
                 st.session_state.latest_room_click = None
                 st.success(f"Room zone '{room_name.strip()}' saved.")
                 st.rerun()
-    
-    
-    
-    
-
-    if clicked is not None:
-        click_x = float(clicked["x"])
-        click_y = float(clicked["y"])
-
-        if st.session_state.room_corner_1 is None:
-            st.session_state.room_corner_1 = {"x": click_x, "y": click_y}
-            st.success(f"First corner selected: x={click_x:.0f}px, y={click_y:.0f}px")
-            st.rerun()
-
-        elif st.session_state.room_corner_2 is None:
-            st.session_state.room_corner_2 = {"x": click_x, "y": click_y}
-            st.success(f"Second corner selected: x={click_x:.0f}px, y={click_y:.0f}px")
-            st.rerun()
-
-    p1 = st.session_state.room_corner_1
-    p2 = st.session_state.room_corner_2
-
-    if p1:
-        st.info(f"Corner 1: image x={p1['x']:.0f}px, y={p1['y']:.0f}px")
-
-    if p2:
-        st.info(f"Corner 2: image x={p2['x']:.0f}px, y={p2['y']:.0f}px")
-
-    if p1 and p2:
-        x_min_px = min(p1["x"], p2["x"])
-        y_min_px = min(p1["y"], p2["y"])
-        x_max_px = max(p1["x"], p2["x"])
-        y_max_px = max(p1["y"], p2["y"])
-
-        x_min_m = x_min_px / pixel_per_meter
-        y_min_m = y_min_px / pixel_per_meter
-        x_max_m = x_max_px / pixel_per_meter
-        y_max_m = y_max_px / pixel_per_meter
-
-        st.success(
-            f"Selected room zone: "
-            f"X={x_min_m:.2f}–{x_max_m:.2f} m, "
-            f"Y={y_min_m:.2f}–{y_max_m:.2f} m"
-        )
-
-        if st.button("?? Save Selected Room Zone", use_container_width=True):
-            if not room_name.strip():
-                st.error("Please enter a room name before saving.")
-            elif x_max_m <= x_min_m or y_max_m <= y_min_m:
-                st.error("Invalid room zone. Please select two different corners.")
-            else:
-                ers.add_room_zone(
-                    room_name.strip(),
-                    x_min_m,
-                    y_min_m,
-                    x_max_m,
-                    y_max_m,
-                )
-                st.session_state.room_corner_1 = None
-                st.session_state.room_corner_2 = None
-                st.success(f"Room zone '{room_name.strip()}' saved.")
-                st.rerun()
-
     st.markdown("### Saved Room Zones")
     room_zones = ers.fetch_room_zones()
 
@@ -823,10 +759,10 @@ final_staff = ers.fetch_all_staff()
 st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin-bottom:10px;">Emergency Alerts</div>', unsafe_allow_html=True)
 sc1, sc2, sc3, sc4 = st.columns(4)
 groups = [
-    (sc1, "? Email · Mass",     "email_alerts_mass",     "email"),
-    (sc2, "?? SMS · Mass",       "sms_alerts_mass",       "phone"),
-    (sc3, "? Email · Personal",  "email_alerts_personal", "email"),
-    (sc4, "?? SMS · Personal",   "sms_alerts_personal",   "phone"),
+    (sc1, "Email / Mass",     "email_alerts_mass",     "email"),
+    (sc2, "SMS / Mass",       "sms_alerts_mass",       "phone"),
+    (sc3, "Email / Personal",  "email_alerts_personal", "email"),
+    (sc4, "SMS / Personal",   "sms_alerts_personal",   "phone"),
 ]
 for col, label, flag, field in groups:
     with col:
@@ -838,10 +774,10 @@ for col, label, flag, field in groups:
 st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;letter-spacing:2px;color:#586069;text-transform:uppercase;margin:18px 0 10px 0;">Administration Alerts</div>', unsafe_allow_html=True)
 ad1, ad2, ad3, ad4 = st.columns(4)
 admin_groups = [
-    (ad1, "?? Email · Battery",   "admin_email_low_battery"),
-    (ad2, "?? SMS · Battery",     "admin_sms_low_battery"),
-    (ad3, "?? Email · Heartbeat Fail", "admin_email_heartbeat_fail"),
-    (ad4, "?? SMS · Heartbeat Fail", "admin_sms_heartbeat_fail"),
+    (ad1, "Email / Battery",   "admin_email_low_battery"),
+    (ad2, "SMS / Battery",     "admin_sms_low_battery"),
+    (ad3, "Email / Heartbeat Fail", "admin_email_heartbeat_fail"),
+    (ad4, "SMS / Heartbeat Fail", "admin_sms_heartbeat_fail"),
 ]
 for col, label, flag in admin_groups:
     with col:
@@ -849,4 +785,4 @@ for col, label, flag in admin_groups:
         st.markdown(f'<div class="mono" style="font-size:0.6rem; letter-spacing:1px;">{label} ({len(members)})</div>', unsafe_allow_html=True)
         for s in members:
             st.markdown(f'<div style="font-size:0.75rem; border-bottom:1px solid #f0f0f0; padding:2px 0;">{s["name"]}</div>', unsafe_allow_html=True)
-st.markdown('<div style="margin-top:40px; text-align:center; font-family:IBM Plex Mono,monospace; font-size:0.6rem; color:#30363d; letter-spacing:2px;">ERS · CONFIGURATION</div>', unsafe_allow_html=True)
+st.markdown(ers.footer("ERS / CONFIGURATION"), unsafe_allow_html=True)

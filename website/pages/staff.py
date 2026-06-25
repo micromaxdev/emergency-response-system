@@ -9,7 +9,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import utils as ers
 
-st.set_page_config(page_title="ERS · Staff", page_icon="👥", layout="wide")
+st.set_page_config(page_title="ERS - Staff", layout="wide")
 st.markdown(ers.ERS_CSS, unsafe_allow_html=True)
 ers.autorefresh()
 
@@ -25,8 +25,7 @@ ROLES = ["Admin", "Manager", "Security", "Medical", "Warden", "IT", "Other"]
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown('<div style="font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:5px;color:#4065a1;margin-bottom:2px;">ERS</div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:0.6rem;color:#586069;letter-spacing:3px;margin-bottom:20px;">STAFF DIRECTORY</div>', unsafe_allow_html=True)
+    st.markdown(ers.sidebar_title("Staff Directory"), unsafe_allow_html=True)
     st.markdown("---")
     staff_search = st.text_input("Search staff", placeholder="Name, role, email…")
 
@@ -34,15 +33,15 @@ with st.sidebar:
 st.markdown(ers.ers_header("Staff Directory"), unsafe_allow_html=True)
 
 if not os.path.exists(ers.DB_PATH):
-    st.error(f"⚠ Database not found at `{ers.DB_PATH}`.")
+    st.error(f"Database not found at `{ers.DB_PATH}`.")
     st.stop()
 
 if st.session_state.staff_saved:
-    st.success("✓ Staff record saved.")
+    st.success("Staff record saved.")
     st.session_state.staff_saved = False
 
 # ── Add new staff ─────────────────────────────────────────────────────────────
-with st.expander("➕  Add New Staff Member", expanded=False):
+with st.expander("Add New Staff Member", expanded=False):
     with st.form("add_staff_form"):
         c1, c2 = st.columns(2)
         with c1:
@@ -126,9 +125,9 @@ else:
 
                 sb1, sb2 = st.columns(2)
                 with sb1:
-                    save = st.form_submit_button("✓ Save", width="stretch")
+                    save = st.form_submit_button("Save", width="stretch")
                 with sb2:
-                    cancel = st.form_submit_button("✕ Cancel", width="stretch")
+                    cancel = st.form_submit_button("Cancel", width="stretch")
 
                 if save:
                     if not e_name.strip():
@@ -148,12 +147,12 @@ else:
             st.warning(f"Delete **{s['name']}**? This will also unassign them from any devices.")
             dc1, dc2 = st.columns(2)
             with dc1:
-                if st.button("✓ Yes, Delete", key=f"del_yes_{sid}", width="stretch", type="primary"):
+                if st.button("Yes, Delete", key=f"del_yes_{sid}", width="stretch", type="primary"):
                     ers.delete_staff(sid)
                     st.session_state.delete_staff_id = None
                     st.rerun()
             with dc2:
-                if st.button("✕ Cancel", key=f"del_no_{sid}", width="stretch"):
+                if st.button("Cancel", key=f"del_no_{sid}", width="stretch"):
                     st.session_state.delete_staff_id = None
                     st.rerun()
 
@@ -161,8 +160,8 @@ else:
         else:
             em_on = s.get("email_alerts_mass") or s.get("email_alerts_personal")
             sm_on = s.get("sms_alerts_mass")   or s.get("sms_alerts_personal")
-            email_badge = '<span class="pill pill-ok">✉ ON</span>'  if em_on else '<span class="pill pill-skip">✉ OFF</span>'
-            sms_badge   = '<span class="pill pill-ok">📱 ON</span>' if sm_on else '<span class="pill pill-skip">📱 OFF</span>'
+            email_badge = '<span class="pill pill-ok">Email ON</span>' if em_on else '<span class="pill pill-skip">Email OFF</span>'
+            sms_badge = '<span class="pill pill-ok">SMS ON</span>' if sm_on else '<span class="pill pill-skip">SMS OFF</span>'
 
             st.markdown(f"""
             <div class="inc-row">
@@ -198,7 +197,7 @@ with c1:
     st.markdown(f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Email Alerts ({len(email_recipients)})</div>', unsafe_allow_html=True)
     if email_recipients:
         for s in email_recipients:
-            st.markdown(f'<div style="font-size:0.82rem;padding:4px 0;border-bottom:1px solid #f0f0f0;">✉ <strong>{s["name"]}</strong> &nbsp;<span style="color:#586069;">{s.get("email","")}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="font-size:0.82rem;padding:4px 0;border-bottom:1px solid #f0f0f0;"><strong>{s["name"]}</strong> &nbsp;<span style="color:#586069;">{s.get("email","")}</span></div>', unsafe_allow_html=True)
     else:
         st.caption("No staff assigned to email alerts.")
 
@@ -206,13 +205,8 @@ with c2:
     st.markdown(f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.65rem;color:#586069;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">SMS Alerts ({len(sms_recipients)})</div>', unsafe_allow_html=True)
     if sms_recipients:
         for s in sms_recipients:
-            st.markdown(f'<div style="font-size:0.82rem;padding:4px 0;border-bottom:1px solid #f0f0f0;">📱 <strong>{s["name"]}</strong> &nbsp;<span style="color:#586069;">{s.get("phone","")}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="font-size:0.82rem;padding:4px 0;border-bottom:1px solid #f0f0f0;"><strong>{s["name"]}</strong> &nbsp;<span style="color:#586069;">{s.get("phone","")}</span></div>', unsafe_allow_html=True)
     else:
         st.caption("No staff assigned to SMS alerts.")
 
-st.markdown(f"""
-<div style="margin-top:40px;padding-top:14px;border-top:1px solid #1e2530;
-            font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
-            letter-spacing:2px;text-align:center;">
-  ERS · STAFF DIRECTORY
-</div>""", unsafe_allow_html=True)
+st.markdown(ers.footer("ERS / STAFF DIRECTORY"), unsafe_allow_html=True)

@@ -18,8 +18,7 @@ if os.path.exists(ers.DB_PATH):
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown('<div class="ers-logo" style="font-size:1.8rem; letter-spacing:5px;">ERS</div>', unsafe_allow_html=True)
-    st.markdown('<div class="ers-sub">EMERGENCY RESPONSE SYSTEM</div>', unsafe_allow_html=True)
+    st.markdown(ers.sidebar_title("Emergency Response System"), unsafe_allow_html=True)
     st.markdown("---")
     st.caption(f"Server: `{ers.SERVER_HOST}:{ers.SERVER_PORT}`")
     st.caption(f"DB: `{ers.DB_PATH}`")
@@ -54,7 +53,7 @@ for col, (title, path, desc) in zip(cols, nav_pages):
           <div class="nav-card-desc" style="min-height: 60px;">{desc}</div>
         </div>
         """, unsafe_allow_html=True)
-        st.page_link(path, label=f"Open {title} →", width="stretch")
+        st.page_link(path, label=f"Open {title}", width="stretch")
 
 st.markdown("---")
 
@@ -82,13 +81,7 @@ if os.path.exists(ers.DB_PATH):
         state, detail = sys_status.get("retention", ("unknown", "—"))
         st.markdown(f'<div class="kpi-label">Retention</div>{ers.status_pill(state, state.upper())}<div class="mono" style="margin-top:4px;">{detail}</div>', unsafe_allow_html=True)
 else:
-    st.warning(f"⚠ Database not found at `{ers.DB_PATH}`. Please start the server first.")
+    st.warning(f"Database not found at `{ers.DB_PATH}`. Please start the server first.")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<div style="margin-top:40px;padding-top:14px;border-top:1px solid #1e2530;
-            font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#30363d;
-            letter-spacing:2px;text-align:center;">
-  ERS · EMERGENCY RESPONSE SYSTEM · {datetime.now().year}
-</div>
-""", unsafe_allow_html=True)
+st.markdown(ers.footer(f"ERS / EMERGENCY RESPONSE SYSTEM / {datetime.now().year}"), unsafe_allow_html=True)
