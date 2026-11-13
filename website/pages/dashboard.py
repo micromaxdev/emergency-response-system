@@ -82,6 +82,10 @@ with st.sidebar:
 # -- Main ----------------------------------------------------------------------
 st.markdown(ers.ers_header("Emergency Response System"), unsafe_allow_html=True)
 
+_banners = ers.status_banners_html()
+if _banners:
+    st.markdown(_banners, unsafe_allow_html=True)
+
 if not os.path.exists(ers.DB_PATH):
     st.error(f"Database not found at `{ers.DB_PATH}`. Is the ERS server running?")
     st.stop()
@@ -173,7 +177,7 @@ st.markdown("---")
 # Device Communication Status
 st.markdown('<div class="section-title">Device Communication Status</div>', unsafe_allow_html=True)
 
-TARGET_DEVICE_ID = "PICO_TEST_01"
+TARGET_DEVICE_ID = ers.pick_target_device("PICO_TEST_01")
 ACK_BY = "Skylar Li"
 comm = ers.get_device_comm_status(TARGET_DEVICE_ID)
 

@@ -2,3 +2,6 @@ secrets.py
 __pycache__/
 *.pyc
 .vscode
+
+# Per-device provisioning data (Wi-Fi credentials, site id) - never commit
+device.json

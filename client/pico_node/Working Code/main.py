@@ -122,13 +122,22 @@ class INA219:
 #  USER CONFIG
 # ================================================================
 
-WIFI_SSID = "2KF2197U00607-BFW"
-WIFI_PASS = "MmxLetsUIn2014"
+# Identity and site/Wi-Fi settings are NOT typed here any more:
+#   DEVICE_ID  <- derived from the chip's factory serial (identity.py)
+#   device.json <- written per device by tools/provision_pico.py
+# (site id, hotspot SSID/password, server address). Keep device.json out of git.
+import identity
 
-PI5_IP   = "192.168.115.50"
-PI5_PORT = 8081
+CFG = identity.load_config()
+WIFI_SSID = CFG["wifi_ssid"]
+WIFI_PASS = CFG["wifi_pass"]
+PI5_IP    = CFG["server_ip"]
+PI5_PORT  = CFG["server_port"]
+SITE_ID   = CFG["site_id"]
 
-DEVICE_ID = "PICO_TEST_03"  
+DEVICE_ID       = identity.device_id()
+_DEVICE_ID_RAW  = identity.device_id_bytes()
+FW_VERSION      = identity.FW_VERSION
 
 # ----------------------------------------------------------------
 #  Battery calibration
@@ -262,7 +271,15 @@ def wifi_connect_if_needed(timeout_ms=WIFI_CONNECT_TIMEOUT_MS):
 
 def send_via_wifi(payload: dict) -> bool:
     s = None
+    # Same identity as the LoRa frame, so the server resolves both identically.
+    payload = dict(payload)
+    payload["site_id"] = SITE_ID
+    payload["channel"] = "wifi"
+    payload["fw"] = FW_VERSION
     try:
+        if not WIFI_SSID:
+            print("[Wi-Fi] No SSID provisioned")
+            return False
         if not wifi_connect_if_needed():
             print("[Wi-Fi] Not available")
             return False
@@ -283,16 +300,11 @@ def send_via_wifi(payload: dict) -> bool:
         return False
 
 # ---- LoRa helpers ----
-def get_device_code(device_id: str) -> int:
-    if device_id == "PICO_TEST_02":
-        return 1
-    return 255
-
 def encode_for_lorawan(payload: dict) -> bytes:
-    device_code = get_device_code(payload.get("device_id", ""))
-    event_code  = payload.get("event_code", 0)
-    seq         = payload.get("seq", 0) & 0xFFFF
-    return bytes([device_code, event_code, (seq >> 8) & 0xFF, seq & 0xFF])
+    """LoRa frame v1: [0xE1][site 2B][device 4B][event][seq 2B] (see identity.py)."""
+    return identity.encode_frame_v1(
+        SITE_ID, _DEVICE_ID_RAW,
+        payload.get("event_code", 0), payload.get("seq", 0))
 
 def lora_init() -> bool:
     global lora_ready, sx
@@ -671,6 +683,7 @@ print("READY:")
 print(f" - Rapid press GPIO{BUTTON_GPIO} 5 times -> MASS EMERGENCY")
 print(f" - Hold GPIO{BUTTON_GPIO} {HOLD_SECONDS} seconds -> PERSONAL EMERGENCY")
 print(" - Fall detection -> LED ON, 10s cancel window -> then PERSONAL EMERGENCY")
+print(f"Device ID: {DEVICE_ID}  site: {SITE_ID}  fw: {FW_VERSION}")
 print(f"Target Pi5: {PI5_IP}:{PI5_PORT}")
 print(f"Low-battery LED (GPIO14) threshold: {LOW_BATTERY_THRESHOLD}%")
 

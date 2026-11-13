@@ -1,6 +1,7 @@
 """SQLite persistence layer: schema setup, system flags, incidents and lookups."""
 
 import sqlite3
+from datetime import datetime, timedelta
 
 import config
 from event_log import log_event, now_str
@@ -8,7 +9,48 @@ from event_log import log_event, now_str
 DB_PATH = config.DB_PATH
 
 
-# -- Schema --------------------------------------------------------------------
+# Columns added to `devices` for registration (device-registration plan, Rev 3).
+# Existing rows get status 'active' so devices registered before this change keep
+# alerting exactly as before. Rows created by the device-list import are inserted
+# explicitly as 'commissioning'.
+DEVICE_MIGRATION_COLUMNS = (
+    ("hw_serial", "TEXT"),
+    ("site_id", "INTEGER"),
+    ("status", "TEXT DEFAULT 'active'"),
+    ("last_seen", "TEXT"),
+    ("last_rssi", "REAL"),
+    ("last_snr", "REAL"),
+    ("last_channel", "TEXT"),
+    ("battery_pct", "REAL"),
+    ("fw_version", "TEXT"),
+    ("test_until", "TEXT"),
+)
+
+INCIDENT_MIGRATION_COLUMNS = (
+    ("triggered_by", "TEXT"),
+    ("is_test", "INTEGER DEFAULT 0"),
+    ("device_status", "TEXT"),
+)
+
+# Admin-alert flags are normally created by the dashboard; the server needs them
+# to find recipients for "unregistered device" emails, so make sure they exist.
+STAFF_ADMIN_COLUMNS = (
+    "admin_email_low_battery", "admin_sms_low_battery",
+    "admin_email_ups", "admin_sms_ups",
+    "admin_email_heartbeat_fail", "admin_sms_heartbeat_fail",
+)
+
+CHECKLIST_ITEMS = ("heartbeat", "personal", "mass", "wifi")  # + "wearer" (derived)
+
+
+def _add_columns(conn, table, columns):
+    for name, decl in columns:
+        try:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+        except sqlite3.OperationalError:
+            pass  # already present
+
+
 def init_db():
     """Create the database schema if it does not already exist and seed flags."""
     conn = sqlite3.connect(DB_PATH)
@@ -39,10 +81,7 @@ def init_db():
         );
         """)
 
-        try:
-            conn.execute("ALTER TABLE incidents ADD COLUMN triggered_by TEXT")
-        except sqlite3.OperationalError:
-            pass
+        _add_columns(conn, "incidents", INCIDENT_MIGRATION_COLUMNS)
 
         conn.execute("""
         CREATE TABLE IF NOT EXISTS staff (
@@ -79,6 +118,18 @@ def init_db():
             assigned_staff_id INTEGER,
             created_at        TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (assigned_staff_id) REFERENCES staff(id)
+        );
+        """)
+
+        _add_columns(conn, "devices", DEVICE_MIGRATION_COLUMNS)
+        _add_columns(conn, "staff", [(c, "INTEGER DEFAULT 0") for c in STAFF_ADMIN_COLUMNS])
+
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS commissioning_checks (
+            device_id TEXT NOT NULL,
+            check_name TEXT NOT NULL,
+            passed_at TEXT,
+            PRIMARY KEY (device_id, check_name)
         );
         """)
 
@@ -158,8 +209,9 @@ def insert_incident(row: dict):
                 audio_status, audio_result, audio_error,
                 email_status, email_error,
                 sms_status, sms_result, sms_error,
-                relay_status, relay_error, raw_json
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                relay_status, relay_error, raw_json,
+                is_test, device_status
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             row.get("server_time"),
             row.get("device_id"),
@@ -181,6 +233,8 @@ def insert_incident(row: dict):
             row.get("relay_status"),
             row.get("relay_error"),
             row.get("raw_json"),
+            1 if row.get("is_test") else 0,
+            row.get("device_status"),
         ))
         conn.commit()
     finally:
@@ -282,3 +336,99 @@ def lookup_room_by_xy(x, y):
             "error": str(e),
         })
         return None
+
+
+# -- Device registry (registration / commissioning) ----------------------------
+def get_device(device_id: str):
+    """Return the devices row for an ERS device id as a dict, or None."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM devices WHERE device_id = ?", (device_id,)
+        ).fetchone()
+        conn.close()
+        return dict(row) if row else None
+    except Exception as e:
+        log_event({"server_time": now_str(), "type": "device_lookup_failed", "error": str(e)})
+        return None
+
+
+def effective_status(device) -> str:
+    """Map a devices row to the handling status used by the incident handler.
+
+    None                      -> 'unregistered'
+    active + open test window -> 'testing'   (treated like commissioning)
+    otherwise                 -> the stored status (active/commissioning/retired/...)
+    """
+    if device is None:
+        return "unregistered"
+    status = (device.get("status") or "active").lower()
+    if status == "active" and device.get("test_until"):
+        try:
+            if datetime.strptime(device["test_until"], "%Y-%m-%d %H:%M:%S") > datetime.now():
+                return "testing"
+        except ValueError:
+            pass
+    return status
+
+
+def touch_device(device_id: str, rssi=None, snr=None, channel=None,
+                 battery_pct=None, fw_version=None):
+    """Record that a (registered) device was just heard. Called for every packet."""
+    sets = ["last_seen = ?"]
+    args = [now_str()]
+    for col, val in (("last_rssi", rssi), ("last_snr", snr), ("last_channel", channel),
+                     ("battery_pct", battery_pct), ("fw_version", fw_version)):
+        if val is not None:
+            sets.append(f"{col} = ?")
+            args.append(val)
+    args.append(device_id)
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute(f"UPDATE devices SET {', '.join(sets)} WHERE device_id = ?", args)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log_event({"server_time": now_str(), "type": "touch_device_failed", "error": str(e)})
+
+
+def tick_checklist(device_id: str, check_name: str):
+    """Mark a commissioning checklist item as passed (idempotent, keeps first time)."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute(
+            "INSERT OR IGNORE INTO commissioning_checks (device_id, check_name, passed_at) "
+            "VALUES (?,?,?)", (device_id, check_name, now_str()))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log_event({"server_time": now_str(), "type": "checklist_tick_failed", "error": str(e)})
+
+
+def start_test_window(device_id: str, minutes: int = None):
+    """Put a live device 'under test' for N minutes; it reverts automatically."""
+    minutes = minutes or config.TEST_WINDOW_MIN
+    until = (datetime.now() + timedelta(minutes=minutes)).strftime("%Y-%m-%d %H:%M:%S")
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute("UPDATE devices SET test_until=? WHERE device_id=?", (until, device_id))
+        conn.commit()
+    finally:
+        conn.close()
+    return until
+
+
+def get_admin_email_recipients() -> list:
+    """Admin recipients for system-level notices (reuses the heartbeat-fail flag)."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        rows = conn.execute(
+            "SELECT email FROM staff WHERE admin_email_heartbeat_fail=1 "
+            "AND email!='' AND email IS NOT NULL"
+        ).fetchall()
+        conn.close()
+        return [r[0].strip() for r in rows if r[0] and r[0].strip()]
+    except Exception as e:
+        log_event({"server_time": now_str(), "type": "admin_email_lookup_failed", "error": str(e)})
+        return []

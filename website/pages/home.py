@@ -27,6 +27,10 @@ with st.sidebar:
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(ers.ers_header("Emergency Response System"), unsafe_allow_html=True)
 
+_banners = ers.status_banners_html()
+if _banners:
+    st.markdown(_banners, unsafe_allow_html=True)
+
 st.markdown("""
 <div style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:#586069;
             margin-bottom:36px;letter-spacing:1px;">

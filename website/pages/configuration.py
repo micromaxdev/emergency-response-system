@@ -5,6 +5,7 @@ Full version with no omissions. Centrally managed via utils.py (ers).
 
 import streamlit as st
 import os, sys
+from datetime import datetime
 import plotly.express as px
 from PIL import Image
 from streamlit_image_coordinates import streamlit_image_coordinates
@@ -67,6 +68,20 @@ st.markdown('<div class="section-title">Device Management</div>', unsafe_allow_h
 if st.session_state.device_saved:
     st.success("Device configuration saved.")
     st.session_state.device_saved = False
+
+_banners = ers.status_banners_html()
+if _banners:
+    st.markdown(_banners, unsafe_allow_html=True)
+
+with st.expander("Import device list (from provisioning)", expanded=False):
+    st.caption("Upload the CSV produced by tools/provision_pico.py. New devices start in "
+               "COMMISSIONING: test presses are recorded but never trigger sirens, relay, SMS or email.")
+    up = st.file_uploader("Device list CSV", type=["csv"], key="device_csv")
+    if up is not None and st.button("Import devices", key="import_devices_btn"):
+        n_add, n_skip, errs = ers.import_device_list(up.getvalue().decode("utf-8-sig"), ers.get_site_id())
+        st.success(f"Imported {n_add} new device(s); {n_skip} already registered.")
+        for e in errs:
+            st.error(e)
 
 with st.expander("Register New Device", expanded=False):
     unregistered = ers.fetch_known_device_ids()
@@ -169,7 +184,27 @@ else:
               <span style="min-width:180px">{assign_pill}</span>
             </div>""", unsafe_allow_html=True)
 
-            ce, cd, _ = st.columns([1, 1, 6])
+            _status = (d.get("status") or "active")
+            _comm = ers.device_comm_state(d)
+            _pill = {"active": "pill-ok", "commissioning": "pill-warn", "retired": "pill-skip"}.get(_status, "pill-unknown")
+            _test_note = " · UNDER TEST until " + d["test_until"] if (_status == "active" and d.get("test_until") and d["test_until"] > datetime.now().strftime("%Y-%m-%d %H:%M:%S")) else ""
+            _bat = f" · battery {d['battery_pct']:.0f}%" if d.get("battery_pct") is not None else ""
+            _link = f" · {d['last_channel']} {d['last_rssi']} dBm" if d.get("last_channel") and d.get("last_rssi") is not None else (f" · {d['last_channel']}" if d.get("last_channel") else "")
+            st.markdown(
+                f'<div class="mono" style="padding:2px 0 6px 0;">'
+                f'<span class="pill {_pill}">{_status.upper()}</span> '
+                f'<span class="pill pill-{ {"online": "ok", "offline": "fail"}.get(_comm["state"], "unknown") }">{_comm["label"]}</span> '
+                f'{_comm["detail"]}{_link}{_bat}{_test_note}</div>', unsafe_allow_html=True)
+
+            if _status == "commissioning":
+                _chk = ers.fetch_checklist(d)
+                _labels = {"heartbeat": "Heartbeat seen", "personal": "Personal hold", "mass": "Mass (5 presses)",
+                           "wifi": "Wi-Fi backup (optional)", "wearer": "Wearer assigned"}
+                st.markdown('<div class="mono">' + " &nbsp; ".join(
+                    ("✅ " if _chk[k] else "⬜ ") + _labels[k] for k in ("heartbeat", "personal", "mass", "wifi", "wearer")
+                ) + "</div>", unsafe_allow_html=True)
+
+            ce, cd, ca, _ = st.columns([1, 1, 2, 5])
             with ce:
                 if st.button("Edit", key=f"ed_{did}", use_container_width=True):
                     st.session_state.edit_device_id = did
@@ -178,6 +213,26 @@ else:
                 if st.button("Remove", key=f"rm_{did}", use_container_width=True):
                     st.session_state.delete_device_id = did
                     st.rerun()
+            with ca:
+                if _status == "commissioning":
+                    if st.button("Activate", key=f"act_{did}", use_container_width=True, type="primary"):
+                        _ok, _missing = ers.activate_device(d)
+                        if _ok:
+                            st.rerun()
+                        else:
+                            st.warning("Checklist incomplete: " + ", ".join(_missing))
+                elif _status == "active":
+                    if st.button(f"Test for {ers.TEST_WINDOW_MIN} min", key=f"tst_{did}", use_container_width=True):
+                        ers.start_test_window(did)
+                        st.rerun()
+                elif _status == "retired":
+                    if st.button("Reactivate", key=f"rea_{did}", use_container_width=True):
+                        ers.set_device_status(did, "commissioning")
+                        st.rerun()
+                if _status in ("active", "commissioning"):
+                    if st.button("Retire", key=f"ret_{did}", use_container_width=True):
+                        ers.set_device_status(did, "retired")
+                        st.rerun()
 
 # --------------------------------------------------------------------------------
 #  4. ALERT RECIPIENTS — MASS EMERGENCY

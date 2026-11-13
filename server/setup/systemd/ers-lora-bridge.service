@@ -1,0 +1,16 @@
+[Unit]
+Description=ERS LoRa bridge (Semtech UDP to ERS server)
+After=ers-server.service ers-lora-pkt-fwd.service
+Wants=ers-server.service
+
+[Service]
+Type=simple
+User=@ERS_USER@
+WorkingDirectory=@ERS_DIR@
+EnvironmentFile=-/etc/ers/ers.env
+ExecStart=@ERS_DIR@/venv/bin/python @ERS_DIR@/server/lora/bridge.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -14,6 +14,7 @@ here from a focused submodule:
     system     - status, control flags, admin recipients, server commands
     mapping    - map scale, gateways, room zones (localisation)
     heartbeat  - device online/offline status
+    banners    - Internet-offline / test-mode / unregistered-device banners
 """
 
 from .config import *      # noqa: F401,F403
@@ -26,8 +27,9 @@ from .battery import *     # noqa: F401,F403
 from .system import *      # noqa: F401,F403
 from .mapping import *     # noqa: F401,F403
 from .heartbeat import *   # noqa: F401,F403
+from .banners import *     # noqa: F401,F403
 
-from . import config, styles, db, incidents, staff, devices, battery, system, mapping, heartbeat
+from . import config, styles, db, incidents, staff, devices, battery, system, mapping, heartbeat, banners
 
 __all__ = [
     *config.__all__,
@@ -40,4 +42,5 @@ __all__ = [
     *system.__all__,
     *mapping.__all__,
     *heartbeat.__all__,
+    *banners.__all__,
 ]

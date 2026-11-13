@@ -1,5 +1,6 @@
 """Shared paths, constants and the page auto-refresh helper."""
 
+import json
 import os
 
 # websites/utils/config.py -> websites/utils -> websites -> <repo root>
@@ -25,6 +26,26 @@ SERVER_PORT = 8081
 DRILL_DEVICE = "DASHBOARD_DRILL"
 DRILL_SOURCE = "test_drill"
 
+# Site identity written by server/setup/ers_setup.py (None when not provisioned).
+SITE_FILE_CANDIDATES = [
+    os.environ.get("ERS_SITE_FILE", ""),
+    "/etc/ers/site.json",
+    os.path.join(ROOT_DIR, "data", "site.json"),
+]
+
+
+def get_site_id():
+    """Return this site's id (int) or None if no site file exists."""
+    for path in SITE_FILE_CANDIDATES:
+        if path and os.path.isfile(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return int(json.load(f)["site_id"])
+            except (OSError, ValueError, KeyError):
+                return None
+    return None
+
+
 REFRESH_SEC = 5
 RETENTION_DAYS = 30
 
@@ -32,7 +53,7 @@ __all__ = [
     "ROOT_DIR", "DB_PATH", "HEARTBEAT_LOG_FILE", "OFFLINE_TIMEOUT_S",
     "MAP_DIR", "AUDIO_DIR", "SERVER_HOST", "SERVER_PORT",
     "DRILL_DEVICE", "DRILL_SOURCE", "REFRESH_SEC", "RETENTION_DAYS",
-    "autorefresh",
+    "autorefresh", "get_site_id",
 ]
 
 

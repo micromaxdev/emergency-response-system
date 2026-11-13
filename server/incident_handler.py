@@ -6,11 +6,16 @@ import time
 import config  # noqa: F401  (ensures alert_handlers/ is on sys.path before the imports below)
 from event_log import log_event, now_str
 from database import (
+    effective_status,
+    get_admin_email_recipients,
+    get_device,
     get_email_recipients,
     get_sms_recipients,
     get_triggered_by,
     insert_incident,
     lookup_room_by_xy,
+    tick_checklist,
+    touch_device,
 )
 from location import safe_estimate_location
 from alert_runtime import start_audio_loop, start_relay_loop, stop_all_alerts
@@ -149,8 +154,87 @@ def _persist_incident(incident: dict, when: str):
         log_event({"server_time": when, "type": "sqlite_incident_failed", "error": str(e)})
 
 
+UNREGISTERED_PREFIX = "UNREGISTERED-"
+
+# Counters for traffic we deliberately ignore (also logged per occurrence).
+FOREIGN_SITE_COUNT = 0
+
+
+def _site_matches(payload: dict) -> bool:
+    """False if the payload names a different site than this server's.
+
+    Payloads without a site_id (legacy Wi-Fi JSON, dashboard commands) and
+    servers without a provisioned site are never filtered.
+    """
+    global FOREIGN_SITE_COUNT
+    server_site = config.get_site_id()
+    pkt_site = payload.get("site_id")
+    if server_site is None or pkt_site is None:
+        return True
+    try:
+        if int(pkt_site) == server_site:
+            return True
+    except (TypeError, ValueError):
+        pass
+    FOREIGN_SITE_COUNT += 1
+    log_event({
+        "server_time": now_str(),
+        "type": "foreign_site_dropped",
+        "device_id": payload.get("device_id"),
+        "site_id": pkt_site,
+        "count": FOREIGN_SITE_COUNT,
+    })
+    return False
+
+
+def _channel_of(payload: dict) -> str:
+    """Which transport carried this payload: 'lora' (via the bridge) or 'wifi'."""
+    return str(payload.get("channel") or payload.get("source") or "wifi").lower()
+
+
+def _tick_commissioning(device_id: str, payload: dict, em_flag: bool):
+    """Tick the commissioning checklist items this packet proves."""
+    code = payload.get("event_code")
+    if code == 99 or (not em_flag and payload.get("status") == "online"):
+        tick_checklist(device_id, "heartbeat")
+    if code == 1 or (em_flag and str(payload.get("emergency_type", "")).lower() == "mass"):
+        tick_checklist(device_id, "mass")
+    if code == 2:
+        tick_checklist(device_id, "personal")
+    if _channel_of(payload) == "wifi":
+        tick_checklist(device_id, "wifi")
+
+
+def _dispatch_admin_unregistered(incident: dict, event: dict, when: str):
+    """Unregistered devices never page staff: only admins get an email (D13)."""
+    try:
+        recipients = get_admin_email_recipients()
+        if not recipients:
+            incident["email_status"] = "skipped"
+            incident["email_error"] = "no admin recipients configured"
+            return
+        send_email_alert(event, to_emails=recipients)
+        incident["email_status"] = "ok"
+    except Exception as e:
+        log_event({"server_time": when, "type": "email_failed", "error": str(e)})
+        incident["email_status"] = "failed"
+        incident["email_error"] = str(e)
+
+
 def handle_payload(payload: dict, addr):
-    """Process one decoded payload: dispatch alerts and record the incident."""
+    """Process one decoded payload.
+
+    Identity is resolved here, for every transport, from the device registry:
+        active        -> normal alert path
+        commissioning -> TEST record + checklist tick, no sirens/relay/SMS/email
+        testing       -> same as commissioning (live device in a 15 min test window)
+        retired       -> recorded and flagged, no alerts
+        unregistered  -> recorded as UNREGISTERED-<id>, admin email only, no wearer
+    """
+    if payload.get("command") == "stop_alerts":
+        stop_all_alerts()
+        return
+
     device_id = payload.get("device_id") or payload.get("pico_id") or addr[0]
     em_flag = payload.get("emergency", False)
 
@@ -161,9 +245,24 @@ def handle_payload(payload: dict, addr):
         "emergency_value": em_flag,
     })
 
-    if payload.get("command") == "stop_alerts":
-        stop_all_alerts()
+    if not _site_matches(payload):
         return
+
+    device = get_device(device_id)
+    status = effective_status(device)
+
+    # Every packet (heartbeat, battery report, alert) proves the device is alive.
+    if device is not None:
+        touch_device(
+            device_id,
+            rssi=payload.get("rssi"),
+            snr=payload.get("snr"),
+            channel=_channel_of(payload),
+            battery_pct=payload.get("battery_pct"),
+            fw_version=payload.get("fw"),
+        )
+        if status in ("commissioning", "testing"):
+            _tick_commissioning(device_id, payload, bool(em_flag))
 
     if not em_flag:
         return
@@ -178,13 +277,27 @@ def handle_payload(payload: dict, addr):
     if _is_rate_limited(key, time.time()):
         return
 
-    triggered_by = get_triggered_by(device_id)
+    is_test = status in ("commissioning", "testing")
+    suppress_alerts = status != "active"
+
+    if status == "unregistered":
+        shown_id = UNREGISTERED_PREFIX + str(device_id)
+        triggered_by = None
+        msg = f"UNREGISTERED DEVICE: {msg}"
+    else:
+        shown_id = device_id
+        triggered_by = get_triggered_by(device_id)
+        if is_test:
+            msg = f"[TEST] {msg}"
+        elif status == "retired":
+            msg = f"[RETIRED DEVICE] {msg}"
 
     event = {
         "server_time": when,
-        "device_id": device_id,
-        "emergency_type": em_type,
+        "device_id": shown_id,
+        "emergency_type": "unregistered" if status == "unregistered" else em_type,
         "message": msg,
+        "emergency_message": msg,
         "from_ip": addr[0],
         "from_port": addr[1],
         "pico_ts": ts,
@@ -192,13 +305,17 @@ def handle_payload(payload: dict, addr):
         "raw": payload,
     }
 
-    payload_with_location = _attach_location(event, payload, when)
+    if suppress_alerts:
+        payload_to_store = payload
+    else:
+        payload_with_location = _attach_location(event, payload, when)
+        payload_to_store = payload_with_location
 
     log_event(event)
 
     incident = {
         "server_time": when,
-        "device_id": device_id,
+        "device_id": shown_id,
         "emergency_type": em_type,
         "trigger_source": src,
         "message": msg,
@@ -206,11 +323,21 @@ def handle_payload(payload: dict, addr):
         "from_ip": addr[0],
         "from_port": addr[1],
         "pico_ts": ts,
-        "raw_json": json.dumps(payload_with_location, ensure_ascii=False),
+        "raw_json": json.dumps(payload_to_store, ensure_ascii=False),
+        "is_test": is_test,
+        "device_status": status,
     }
 
-    _dispatch_audio(incident, em_type, when)
-    _dispatch_email(incident, event, em_type, when)
-    _dispatch_sms(incident, event, em_type, when)
-    _dispatch_relay(incident, em_type, when)
+    if status == "active":
+        _dispatch_audio(incident, em_type, when)
+        _dispatch_email(incident, event, em_type, when)
+        _dispatch_sms(incident, event, em_type, when)
+        _dispatch_relay(incident, em_type, when)
+    else:
+        for ch in ("audio", "email", "sms", "relay"):
+            incident[f"{ch}_status"] = "skipped"
+        log_event({"server_time": when, "type": "alerts_suppressed",
+                   "device_id": shown_id, "status": status})
+        if status == "unregistered":
+            _dispatch_admin_unregistered(incident, event, when)
     _persist_incident(incident, when)

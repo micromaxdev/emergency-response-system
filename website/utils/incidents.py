@@ -26,7 +26,7 @@ def fetch_incidents(limit=200):
         return []
     try:
         rows = conn.execute(
-            "SELECT * FROM incidents ORDER BY id DESC LIMIT ?",
+            "SELECT * FROM incidents WHERE COALESCE(is_test,0)=0 ORDER BY id DESC LIMIT ?",
             (limit,)
         ).fetchall()
         return [dict(r) for r in rows]
@@ -209,7 +209,7 @@ def fetch_counts():
             SUM(CASE WHEN emergency_type='mass' AND trigger_source!='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as mass,
             SUM(CASE WHEN emergency_type='personal' AND trigger_source!='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as personal,
             SUM(CASE WHEN trigger_source='{DRILL_SOURCE}' THEN 1 ELSE 0 END) as drills
-            FROM incidents
+            FROM incidents WHERE COALESCE(is_test,0)=0
         """).fetchone()
         return dict(row)
     finally:

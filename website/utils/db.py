@@ -37,6 +37,28 @@ def init_extra_tables():
             assigned_staff_id INTEGER, created_at TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (assigned_staff_id) REFERENCES staff(id)
         );""")
+        # Device-registration columns. Keep in sync with server/database.py
+        # (DEVICE_MIGRATION_COLUMNS); either process may start first.
+        for col, decl in (
+            ("hw_serial", "TEXT"), ("site_id", "INTEGER"),
+            ("status", "TEXT DEFAULT 'active'"), ("last_seen", "TEXT"),
+            ("last_rssi", "REAL"), ("last_snr", "REAL"), ("last_channel", "TEXT"),
+            ("battery_pct", "REAL"), ("fw_version", "TEXT"), ("test_until", "TEXT"),
+        ):
+            try:
+                conn.execute(f"ALTER TABLE devices ADD COLUMN {col} {decl}")
+            except sqlite3.OperationalError:
+                pass
+        for col, decl in (("is_test", "INTEGER DEFAULT 0"), ("device_status", "TEXT")):
+            try:
+                conn.execute(f"ALTER TABLE incidents ADD COLUMN {col} {decl}")
+            except sqlite3.OperationalError:
+                pass  # present already, or the server has not created incidents yet
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS commissioning_checks (
+            device_id TEXT NOT NULL, check_name TEXT NOT NULL, passed_at TEXT,
+            PRIMARY KEY (device_id, check_name)
+        );""")
         for col in (
             "admin_email_low_battery",
             "admin_sms_low_battery",

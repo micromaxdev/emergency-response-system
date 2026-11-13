@@ -1,0 +1,21 @@
+[Unit]
+Description=ERS backend server (TCP 8081, alert fan-out)
+After=network.target
+
+[Service]
+Type=simple
+User=@ERS_USER@
+WorkingDirectory=@ERS_DIR@
+EnvironmentFile=-/etc/ers/ers.env
+# Audio needs the user's runtime dir; works without a desktop login thanks to
+# `loginctl enable-linger` (done by ers_setup.py).
+Environment=XDG_RUNTIME_DIR=/run/user/@ERS_UID@
+Environment=PYTHONUNBUFFERED=1
+ExecStart=@ERS_DIR@/venv/bin/python @ERS_DIR@/server/server.py
+Restart=always
+RestartSec=2
+# If memory runs out, never let the kernel kill the alarm path first.
+OOMScoreAdjust=-900
+
+[Install]
+WantedBy=multi-user.target

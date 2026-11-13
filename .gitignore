@@ -220,3 +220,8 @@ server/emergency_log.jsonl
 # Hardware build artifacts and CAD design (kept on disk, not in version control)
 sx1302_hal_rpi5-master/
 schematics/
+
+# Device registration: site files hold hotspot credentials; uploaded map is site data
+data/exports/
+data/site.json
+assets/maps/company_map.png
