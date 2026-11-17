@@ -5218,253 +5218,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "untitled-eagle-import:SJ2W"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "SJ"
-				(at 2.54 0.381 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify left bottom)
-				)
-			)
-			(property "Value" ""
-				(at 2.54 -1.905 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.778 1.5113)
-					)
-					(justify left bottom)
-				)
-			)
-			(property "Footprint" "untitled:SJ_2"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "SMD solder JUMPER"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "POPULARITY" "7"
-				(at 2.54 -3.429 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "SJ2W_1_0"
-				(polyline
-					(pts
-						(xy -2.54 0) (xy -1.27 0)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 0.635) (xy 1.27 0.635)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 0) (xy -1.27 0.635)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -0.635)
-					(end 1.27 0.635)
-					(stroke
-						(width -0.0001)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 -0.635) (xy -1.27 0)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start -1.27 1.397)
-					(mid 0 2.667)
-					(end 1.27 1.397)
-					(stroke
-						(width 0.0001)
-						(type solid)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(arc
-					(start 1.27 -1.397)
-					(mid 0 -2.667)
-					(end -1.27 -1.397)
-					(stroke
-						(width 0.0001)
-						(type solid)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0.635) (xy 1.27 -0.635)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 -0.635) (xy -1.27 -0.635)
-					)
-					(stroke
-						(width 0.1524)
-						(type solid)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at 0 5.08 270)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.524 1.524)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 2.54)
-					(name "2"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.524 1.524)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "3"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.524 1.524)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "untitled-eagle-import:SWITCH-SPDT-SMD-RIGHT-ANGLE"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -6990,22 +6743,10 @@
 		(uuid "07ba928d-dcee-4475-9821-941a0c29c2d8")
 	)
 	(junction
-		(at 127 149.86)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "1124556d-592b-4c25-a877-ac047d69eb46")
-	)
-	(junction
 		(at 175.26 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "152c9cbe-ff30-4ec1-ae52-97da63b6dfec")
-	)
-	(junction
-		(at 101.6 165.1)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "172f6306-5142-45ce-8a22-1359f1dbbf3c")
 	)
 	(junction
 		(at 63.5 154.94)
@@ -7062,12 +6803,6 @@
 		(uuid "3e5d11c2-6050-4f76-9ccd-24d1a80a2616")
 	)
 	(junction
-		(at 299.72 132.08)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "403a794b-eda5-431a-bfdd-638e569d533e")
-	)
-	(junction
 		(at 144.78 109.22)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7078,6 +6813,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4450a188-4e6b-472e-9dba-acb43d243bab")
+	)
+	(junction
+		(at 101.6 158.75)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "45e9a489-1e51-4445-b01c-b559c9a3db4a")
 	)
 	(junction
 		(at 246.38 114.3)
@@ -7122,6 +6863,12 @@
 		(uuid "76e6afbe-98bf-4cec-ac01-9bedcd2cd3b0")
 	)
 	(junction
+		(at 127 149.86)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "885e5d61-0dd4-4fab-a14e-771d7387c8aa")
+	)
+	(junction
 		(at 127 116.84)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7158,6 +6905,12 @@
 		(uuid "c0541050-a7b9-4f43-a615-40c06f12d2ad")
 	)
 	(junction
+		(at 264.16 111.76)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c18c4b87-7ec7-4220-8f93-8fbea25f7293")
+	)
+	(junction
 		(at 144.78 78.74)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7170,22 +6923,16 @@
 		(uuid "ce180674-d107-4672-9e40-ada61e9e68d1")
 	)
 	(junction
-		(at 127 160.02)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e5c3cbf9-3eee-43c7-815f-302499f9feb6")
-	)
-	(junction
 		(at 78.74 142.24)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fc6bd2cc-09bc-4fe8-86c7-f80556ddf44c")
 	)
 	(junction
-		(at 264.16 111.76)
+		(at 299.72 132.08)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "fd2dc310-d570-4f53-8732-6fbaad21791c")
+		(uuid "ff8eed3a-6f69-4526-a162-8f963b572ad1")
 	)
 	(wire
 		(pts
@@ -7209,7 +6956,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 160.02) (xy 127 165.1)
+			(xy 127 142.24) (xy 127 149.86)
 		)
 		(stroke
 			(width 0.1524)
@@ -7229,7 +6976,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 127) (xy 91.44 165.1)
+			(xy 91.44 127) (xy 91.44 158.75)
 		)
 		(stroke
 			(width 0.1524)
@@ -7309,7 +7056,17 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 165.1) (xy 127 165.1)
+			(xy 264.16 93.98) (xy 264.16 111.76)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "11bf66e5-dde8-4557-8762-6df7678395a2")
+	)
+	(wire
+		(pts
+			(xy 101.6 158.75) (xy 127 158.75)
 		)
 		(stroke
 			(width 0.1524)
@@ -7479,7 +7236,7 @@
 	)
 	(wire
 		(pts
-			(xy 299.72 132.08) (xy 299.72 111.76)
+			(xy 306.07 132.08) (xy 306.07 93.98)
 		)
 		(stroke
 			(width 0.1524)
@@ -7576,16 +7333,6 @@
 			(type solid)
 		)
 		(uuid "334b5ac0-0287-4786-b3a2-7364cc2a1fc6")
-	)
-	(wire
-		(pts
-			(xy 106.68 149.86) (xy 101.6 149.86)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "37dd25cf-95d7-43a4-a434-a88b41934909")
 	)
 	(wire
 		(pts
@@ -7729,7 +7476,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 165.1) (xy 101.6 165.1)
+			(xy 91.44 158.75) (xy 101.6 158.75)
 		)
 		(stroke
 			(width 0.1524)
@@ -7756,16 +7503,6 @@
 			(type solid)
 		)
 		(uuid "65440405-730a-4d8d-aa53-321b95bc148d")
-	)
-	(wire
-		(pts
-			(xy 106.68 160.02) (xy 101.6 160.02)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "65d5485d-eda7-4e12-87f5-4ec9660a1030")
 	)
 	(wire
 		(pts
@@ -7796,6 +7533,16 @@
 			(type solid)
 		)
 		(uuid "698f7659-8d51-40fb-9a1a-379402a434e7")
+	)
+	(wire
+		(pts
+			(xy 127 149.86) (xy 127 158.75)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "6fae4b29-760e-4414-860e-ee1477206e36")
 	)
 	(wire
 		(pts
@@ -7909,7 +7656,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 154.94) (xy 93.98 134.62)
+			(xy 93.98 149.86) (xy 93.98 134.62)
 		)
 		(stroke
 			(width 0.1524)
@@ -7929,7 +7676,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 154.94) (xy 93.98 154.94)
+			(xy 93.98 149.86) (xy 106.68 149.86)
 		)
 		(stroke
 			(width 0.1524)
@@ -8019,16 +7766,6 @@
 	)
 	(wire
 		(pts
-			(xy 127 142.24) (xy 127 149.86)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "9db33951-c5c7-4068-862d-b688ecc0f914")
-	)
-	(wire
-		(pts
 			(xy 149.86 60.96) (xy 149.86 68.58)
 		)
 		(stroke
@@ -8059,7 +7796,7 @@
 	)
 	(wire
 		(pts
-			(xy 299.72 111.76) (xy 264.16 111.76)
+			(xy 306.07 93.98) (xy 264.16 93.98)
 		)
 		(stroke
 			(width 0.1524)
@@ -8176,6 +7913,16 @@
 			(type solid)
 		)
 		(uuid "be2fc6e4-a278-4efb-8d21-465a7babde5e")
+	)
+	(wire
+		(pts
+			(xy 306.07 132.08) (xy 299.72 132.08)
+		)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(uuid "bf39552b-6a35-4808-9ab5-2b49b226fc08")
 	)
 	(wire
 		(pts
@@ -8339,16 +8086,6 @@
 	)
 	(wire
 		(pts
-			(xy 127 149.86) (xy 127 160.02)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "d7cdb364-5b7c-4b95-8ab8-202016344aa4")
-	)
-	(wire
-		(pts
 			(xy 63.5 58.42) (xy 63.5 63.5)
 		)
 		(stroke
@@ -8476,16 +8213,6 @@
 			(type solid)
 		)
 		(uuid "e664d26a-5937-449f-b473-38d61f2a8d1a")
-	)
-	(wire
-		(pts
-			(xy 116.84 160.02) (xy 127 160.02)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "e842a705-0889-4bb6-a55f-8547dfdc7b21")
 	)
 	(wire
 		(pts
@@ -8794,6 +8521,12 @@
 			(uuid "bbe2b57b-9f93-4c9a-ac0b-e55505fc99cc")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND5")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND5")
@@ -8813,7 +8546,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "08a91449-d49f-4348-aa85-7297824c9e00")
-		(property "Reference" "TP1"
+		(property "Reference" "REG_IN"
 			(at 143.51 105.41 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8894,6 +8627,12 @@
 			(uuid "9b428cf0-ce82-497b-a7b0-bfbacaaa4157")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "REG_IN")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "TP1")
@@ -8914,7 +8653,7 @@
 		(dnp no)
 		(uuid "0a58224c-158c-4b6a-8515-c78f5cd86290")
 		(property "Reference" "USB0"
-			(at 64.516 136.652 90)
+			(at 67.056 135.636 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8925,7 +8664,7 @@
 			)
 		)
 		(property "Value" "GRN"
-			(at 66.675 134.112 90)
+			(at 72.898 137.922 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8975,6 +8714,12 @@
 			(uuid "f807e535-e531-4168-a025-d776af797379")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "USB0")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "USB0")
@@ -9072,6 +8817,12 @@
 			)
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "BT1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "BT1")
@@ -9233,6 +8984,12 @@
 			(uuid "0e88a8e0-043d-4df7-aace-89654ad30a4e")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "D2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "D2")
@@ -9253,7 +9010,7 @@
 		(dnp no)
 		(uuid "1446ca5f-b294-427b-8b7a-7808eccfc728")
 		(property "Reference" "R12"
-			(at 34.5186 118.11 0)
+			(at 35.306 119.888 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9264,7 +9021,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 29.718 118.11 0)
+			(at 29.464 119.634 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9314,6 +9071,12 @@
 			(uuid "7bee5ef3-c8eb-4ba6-9b23-158951faf7c8")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R12")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R12")
@@ -9439,6 +9202,12 @@
 			(uuid "06db21a8-7a85-43ca-84a1-5fecd15a33db")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "F1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "F1")
@@ -9470,7 +9239,7 @@
 			)
 		)
 		(property "Value" "LEDCHIPLED_0603"
-			(at 154.432 146.685 90)
+			(at 150.114 154.94 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9520,6 +9289,12 @@
 			(uuid "8c90e6fb-e164-4177-b8e6-6f02c682e3f1")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "CHRG0")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "CHRG0")
@@ -9612,6 +9387,12 @@
 			(uuid "8c102b91-2085-4a37-a7c0-a2856e22d358")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "JP1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "JP1")
@@ -9643,7 +9424,7 @@
 			)
 		)
 		(property "Value" "NCP718ASN330T1G"
-			(at 156.464 119.888 0)
+			(at 154.686 120.65 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9779,6 +9560,12 @@
 			(uuid "3af06a8f-fd68-4669-9e58-d2d4ec8eeba7")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "U4")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "U4")
@@ -9858,6 +9645,12 @@
 			(uuid "1b37479a-e4bf-4f39-a2d6-dc22082a9697")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND20")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND20")
@@ -9937,6 +9730,12 @@
 			(uuid "a802fd84-250f-4fa5-975d-2fdf5c81385c")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND17")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND17")
@@ -10018,6 +9817,12 @@
 			(uuid "634f7f2a-e9d9-485a-ba45-e75c90adc501")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R13")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R13")
@@ -10037,7 +9842,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3e2abefd-bbb5-4a0e-a640-b57336234a4b")
-		(property "Reference" "TP2"
+		(property "Reference" "3V3"
 			(at 184.15 102.87 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10118,6 +9923,12 @@
 			(uuid "9a884a3b-a4a3-4cc3-a6d6-45dffa39d65a")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "3V3")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "TP2")
@@ -10149,7 +9960,7 @@
 			)
 		)
 		(property "Value" "C-USC0603"
-			(at 204.216 85.471 0)
+			(at 196.85 77.47 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10199,90 +10010,15 @@
 			(uuid "a8b8009f-3625-4511-8964-4e093a82900b")
 		)
 		(instances
-			(project "untitled"
-				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
 					(reference "C3")
 					(unit 1)
 				)
 			)
-		)
-	)
-	(symbol
-		(lib_id "untitled-eagle-import:R-US_R0603")
-		(at 111.76 160.02 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3faa75b9-1c11-4d09-9b42-fc10239ad11f")
-		(property "Reference" "R8"
-			(at 113.03 156.4386 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Value" "1K"
-			(at 115.57 158.242 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify right top)
-			)
-		)
-		(property "Footprint" "untitled:R0603"
-			(at 111.76 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 111.76 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 111.76 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "4cccb98f-2c6c-4bcf-9f34-8540b0f49280")
-		)
-		(pin "1"
-			(uuid "636789ef-86d4-499b-b02a-920ace02e34a")
-		)
-		(instances
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
-					(reference "R8")
+					(reference "C3")
 					(unit 1)
 				)
 			)
@@ -10311,7 +10047,7 @@
 			)
 		)
 		(property "Value" "MPU-6050-A"
-			(at 160.02 88.9 0)
+			(at 160.274 85.852 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10504,6 +10240,12 @@
 			(uuid "0010bc6a-2e77-4d8b-b4eb-2c0cca85cb0c")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "U2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "U2")
@@ -10535,7 +10277,7 @@
 			)
 		)
 		(property "Value" "TP4056"
-			(at 104.14 139.7 0)
+			(at 101.854 144.272 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10683,6 +10425,12 @@
 			(uuid "17df835e-a26d-4d3a-88ff-421df965c906")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "U1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "U1")
@@ -10714,7 +10462,7 @@
 			)
 		)
 		(property "Value" "2K4"
-			(at 168.91 148.082 0)
+			(at 162.56 153.924 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10764,6 +10512,12 @@
 			(uuid "752c4a1b-1d5d-4b66-9fc2-eea9b869ae5c")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R4")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R4")
@@ -10843,6 +10597,12 @@
 			(uuid "c9351acb-920a-41d2-a717-b5a0c32bbb6c")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND12")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND12")
@@ -10925,6 +10685,12 @@
 			(uuid "9fac8d2e-45f5-4b13-94a5-2219954ad330")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "CON1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "CON1")
@@ -11003,6 +10769,12 @@
 			(uuid "dff7c285-b91a-4fe0-9d87-71bf73acde75")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY3")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY3")
@@ -11034,7 +10806,7 @@
 			)
 		)
 		(property "Value" "C-USC0603"
-			(at 196.596 85.471 0)
+			(at 191.516 85.852 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11084,6 +10856,12 @@
 			(uuid "17c4ad71-b387-401c-98b1-b4eec1a6bfd3")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "C2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "C2")
@@ -11103,8 +10881,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "59dea1f5-3620-4f67-881c-9a6816171960")
-		(property "Reference" "TP3"
-			(at 199.39 133.35 0)
+		(property "Reference" "GND"
+			(at 198.374 133.35 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11184,6 +10962,12 @@
 			(uuid "9b9fc6ce-8ea1-4aeb-a2f6-e0703cc54cca")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "GND")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "TP3")
@@ -11263,6 +11047,12 @@
 			(uuid "20f47746-b737-4275-a738-d548f116fc47")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND6")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND6")
@@ -11342,6 +11132,12 @@
 			(uuid "380c6db2-e4bb-43d7-823d-ab1adb004785")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND8")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND8")
@@ -11373,7 +11169,7 @@
 			)
 		)
 		(property "Value" "R-US_R0603"
-			(at 153.162 77.47 0)
+			(at 153.67 81.026 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11423,6 +11219,12 @@
 			(uuid "d983fc8f-d70b-4dfb-98d7-1f0b5a79b3da")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R1")
@@ -11501,6 +11303,12 @@
 			(uuid "4f6c0daa-5c93-49ef-a41c-379b620cd416")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY8")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY8")
@@ -11580,6 +11388,12 @@
 			(uuid "f2365637-7e36-48ff-9de8-aba227d9be94")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND18")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND18")
@@ -11658,6 +11472,12 @@
 			(uuid "76af6b65-109e-4259-ba2c-2143503b3226")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY6")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY6")
@@ -11689,7 +11509,7 @@
 			)
 		)
 		(property "Value" "113991054"
-			(at 104.14 91.44 0)
+			(at 102.108 90.932 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11852,6 +11672,12 @@
 			(uuid "d8a31374-3a56-48ef-97d7-831155337316")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "U6")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "U6")
@@ -11884,7 +11710,7 @@
 			)
 		)
 		(property "Value" "0.1uf 50V"
-			(at 82.931 125.476 90)
+			(at 83.82 123.698 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11956,6 +11782,12 @@
 			(uuid "bfab0873-7ef9-4724-9745-964af6752c7f")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "C6")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "C6")
@@ -12037,6 +11869,12 @@
 			(uuid "9663dbe6-1f11-4dbb-bc97-232cbb3ed440")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R6")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R6")
@@ -12068,7 +11906,7 @@
 			)
 		)
 		(property "Value" "R-US_M1206"
-			(at 249.682 123.19 0)
+			(at 250.19 127.254 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12118,6 +11956,12 @@
 			(uuid "2de177ce-2e6f-4487-9f42-4dcb83d466b2")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R2")
@@ -12196,6 +12040,12 @@
 			(uuid "bb090497-0e25-4606-bec1-bd4cc5c1c3c5")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND3")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND3")
@@ -12274,6 +12124,12 @@
 			(uuid "617cd1b6-5378-4443-bceb-8475610dc47a")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND4")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND4")
@@ -12306,7 +12162,7 @@
 			)
 		)
 		(property "Value" "SWITCH-SPDT-SMD-RIGHT-ANGLE"
-			(at 182.118 120.904 0)
+			(at 193.294 120.65 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12381,6 +12237,12 @@
 			(uuid "3e7e0cfd-da58-4ebd-b9e2-b8e1c04568b3")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "S1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "S1")
@@ -12462,6 +12324,12 @@
 			(uuid "30dea9e6-b8f8-445f-9c06-9f1ba5a012bc")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R14")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R14")
@@ -12493,7 +12361,7 @@
 			)
 		)
 		(property "Value" "LEDCHIPLED_0603"
-			(at 154.432 139.065 90)
+			(at 149.606 145.542 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12543,6 +12411,12 @@
 			(uuid "a670d883-79e8-4bcb-96c7-cad13a51c9a1")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "FULL0")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "FULL0")
@@ -12622,6 +12496,12 @@
 			(uuid "7f12bac8-a0e6-494b-ba53-c9cba143deb3")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND9")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND9")
@@ -12653,7 +12533,7 @@
 			)
 		)
 		(property "Value" "C-USC0603"
-			(at 148.336 133.731 0)
+			(at 144.272 134.62 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12703,6 +12583,12 @@
 			(uuid "5d322421-9e02-436f-9d31-31276ed20deb")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "C1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "C1")
@@ -12782,6 +12668,12 @@
 			(uuid "505721c4-0843-451e-810d-fe4770c0621b")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND1")
@@ -12813,7 +12705,7 @@
 			)
 		)
 		(property "Value" "2K4"
-			(at 115.57 148.082 0)
+			(at 109.474 153.67 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12863,6 +12755,12 @@
 			(uuid "4b049563-8809-45e3-bec9-65a685c62d37")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R7")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R7")
@@ -12883,7 +12781,7 @@
 		(dnp no)
 		(uuid "9cb72710-6981-4951-b92a-8fcafa24bb3d")
 		(property "Reference" "R9"
-			(at 77.2414 161.29 0)
+			(at 77.724 157.734 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12894,7 +12792,7 @@
 			)
 		)
 		(property "Value" "5K1"
-			(at 82.042 161.29 0)
+			(at 82.042 158.496 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -12944,6 +12842,12 @@
 			(uuid "80e77b99-6dc5-4fa7-a8ef-3541ce885ab6")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R9")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R9")
@@ -13022,6 +12926,12 @@
 			(uuid "47aba642-e7af-42fc-b47f-ceaa0c175ff8")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY9")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY9")
@@ -13100,6 +13010,12 @@
 			(uuid "76aa2de2-8e86-42b9-bb0f-f4e345fc1449")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY10")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY10")
@@ -13131,7 +13047,7 @@
 			)
 		)
 		(property "Value" "INA219BIDCNR"
-			(at 269.24 138.62 0)
+			(at 269.494 134.112 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13287,6 +13203,12 @@
 			(uuid "dfc019a5-ec27-4ebe-b9a5-a2a723f9d16d")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "U3")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "U3")
@@ -13318,7 +13240,7 @@
 			)
 		)
 		(property "Value" "R-US_R0603"
-			(at 87.122 100.33 0)
+			(at 88.138 105.156 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13368,6 +13290,12 @@
 			(uuid "aef28fc4-bd16-4aa2-9fe2-3855f6b01424")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R5")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R5")
@@ -13399,7 +13327,7 @@
 			)
 		)
 		(property "Value" "LEDCHIPLED_0603"
-			(at 89.535 88.392 90)
+			(at 90.932 93.98 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13449,6 +13377,12 @@
 			(uuid "23709fc3-d07a-49bd-9957-8de16f416253")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "WARN0")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "WARN0")
@@ -13480,7 +13414,7 @@
 			)
 		)
 		(property "Value" "DIODE-DO-214AC"
-			(at 38.1 101.8286 0)
+			(at 45.466 105.918 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13541,6 +13475,12 @@
 			(uuid "d050783c-e22e-4c65-99cc-acd872a9a03a")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "D1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "D1")
@@ -13620,104 +13560,15 @@
 			(uuid "c729fce6-eeed-46dd-9946-cd4358e02b49")
 		)
 		(instances
-			(project "untitled"
-				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
 					(reference "#GND11")
 					(unit 1)
 				)
 			)
-		)
-	)
-	(symbol
-		(lib_id "untitled-eagle-import:SJ2W")
-		(at 101.6 154.94 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "c4538fa2-ae42-4a96-8e84-740eef2ec1a6")
-		(property "Reference" "SJ1"
-			(at 104.14 154.559 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Value" "SJ2W"
-			(at 104.14 156.845 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Footprint" "untitled:SJ_2"
-			(at 101.6 154.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 101.6 154.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 101.6 154.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "POPULARITY" "7"
-			(at 104.14 159.893 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "e75475c2-9a16-498b-936f-23a0526610f3")
-		)
-		(pin "1"
-			(uuid "004690e8-0563-4e6b-9ef4-8404a59a8690")
-		)
-		(pin "3"
-			(uuid "7982f69e-10bd-4045-a577-eeece0521377")
-		)
-		(instances
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
-					(reference "SJ1")
+					(reference "#GND11")
 					(unit 1)
 				)
 			)
@@ -13793,6 +13644,12 @@
 			(uuid "d23ecddf-6fca-4e68-a669-7b59de038a21")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY1")
@@ -13871,6 +13728,12 @@
 			(uuid "ca9cb2b4-23bb-43e3-9c19-e430a6884cb8")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY7")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY7")
@@ -13881,7 +13744,7 @@
 	)
 	(symbol
 		(lib_id "untitled-eagle-import:GND")
-		(at 101.6 167.64 0)
+		(at 101.6 161.29 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -13892,7 +13755,7 @@
 		(dnp no)
 		(uuid "c92e6cf7-618a-4df6-b3af-f5fd30ae7e42")
 		(property "Reference" "#GND33"
-			(at 101.6 167.64 0)
+			(at 101.6 161.29 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13903,7 +13766,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 104.14 170.18 0)
+			(at 104.14 163.83 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13914,7 +13777,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 101.6 167.64 0)
+			(at 101.6 161.29 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13925,7 +13788,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 101.6 167.64 0)
+			(at 101.6 161.29 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13936,7 +13799,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 101.6 167.64 0)
+			(at 101.6 161.29 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13950,6 +13813,12 @@
 			(uuid "5d717cc5-5942-4086-8f28-083a19a2dee5")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND33")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND33")
@@ -14028,6 +13897,12 @@
 			(uuid "f2b09621-5d5d-443a-b00f-4a43510ad6a5")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY12")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY12")
@@ -14106,6 +13981,12 @@
 			(uuid "87504d0f-8c6a-4553-8408-133adcf2ba67")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY5")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY5")
@@ -14185,6 +14066,12 @@
 			(uuid "b625d03b-9849-441b-9021-d120ce20b8fb")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND10")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND10")
@@ -14216,7 +14103,7 @@
 			)
 		)
 		(property "Value" "C-USC0603"
-			(at 161.036 131.191 0)
+			(at 156.718 132.08 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -14266,6 +14153,12 @@
 			(uuid "54484631-c61d-4bbc-8b32-87d9309554cd")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "C5")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "C5")
@@ -14345,6 +14238,12 @@
 			(uuid "d98b4d0b-1d21-4d79-a29b-4cf2a463f8d5")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND7")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND7")
@@ -14423,6 +14322,12 @@
 			(uuid "b362ab8c-e49f-4390-b632-23d82b9b1848")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY24")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY24")
@@ -14501,6 +14406,12 @@
 			(uuid "52bbab4e-22a7-4ea3-a7ca-dfe3d713a8be")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY2")
@@ -14642,6 +14553,12 @@
 			(uuid "9275f818-9fcf-475b-8afc-aea86f24ce6c")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "J3")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "J3")
@@ -14662,25 +14579,25 @@
 		(dnp no)
 		(uuid "e5f68b65-25dd-4431-82cd-1c83f2ac4691")
 		(property "Reference" "R11"
-			(at 69.85 122.9614 90)
+			(at 66.802 126.746 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.778 1.5113)
 				)
-				(justify left bottom)
+				(justify right top)
 			)
 		)
 		(property "Value" "2K4"
-			(at 69.85 125.222 90)
+			(at 72.644 126.492 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.778 1.5113)
 				)
-				(justify left bottom)
+				(justify right top)
 			)
 		)
 		(property "Footprint" "untitled:R0603"
@@ -14723,6 +14640,12 @@
 			(uuid "cd372a29-03e8-4962-acc0-527562874954")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R11")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R11")
@@ -14801,6 +14724,12 @@
 			(uuid "fae77781-baed-4cd6-bee0-9d15a4deecb4")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND15")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND15")
@@ -14879,6 +14808,12 @@
 			(uuid "60fc6d4d-40fd-4b96-aa37-af653e6ca1b3")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#SUPPLY4")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#SUPPLY4")
@@ -14960,6 +14895,12 @@
 			(uuid "984f0c80-fb6a-4b17-a339-bf8f6b2896c0")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "C4")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "C4")
@@ -15041,6 +14982,12 @@
 			(uuid "32494614-5472-4f33-8ee6-8c0e14c0f902")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "R10")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "R10")
@@ -15072,7 +15019,7 @@
 			)
 		)
 		(property "Value" "AOD4184A"
-			(at 46.99 109.22 0)
+			(at 64.262 112.268 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -15202,6 +15149,12 @@
 			(uuid "ffae0712-3879-473f-994b-b568b58a0713")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "Q1")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "Q1")
@@ -15281,6 +15234,12 @@
 			(uuid "b5ed60a9-e82a-440d-9369-b95b7757aaee")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "#GND2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "#GND2")
@@ -15381,6 +15340,12 @@
 			(uuid "f6b1364e-7d40-4efb-8b0a-23803691086e")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "TP4")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "TP4")
@@ -15485,6 +15450,12 @@
 			(uuid "374dad56-a4b6-49da-9295-01c05303fed3")
 		)
 		(instances
+			(project "ERS_SCHEMATIC_Prototype_Rev003"
+				(path "/81217537-1955-4450-b5c3-2ae02e7d7171"
+					(reference "S2")
+					(unit 1)
+				)
+			)
 			(project "untitled"
 				(path "/a9ab3ab1-4895-4eaf-99ff-67479dc37804"
 					(reference "S2")
