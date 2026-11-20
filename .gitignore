@@ -219,4 +219,4 @@ server/emergency_log.jsonl
 
 # Hardware build artifacts and CAD design (kept on disk, not in version control)
 sx1302_hal_rpi5-master/
-schematics/
+

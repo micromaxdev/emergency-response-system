@@ -1,0 +1,121 @@
+(footprint "S2B-PH"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "JST S2B-PH  http://www.jst-mfg.com/product/pdf/eng/ePH.pdf Datasheet")
+	(property "Reference" "CON1"
+		(at -3 -6.5 180)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "edfc8551-7075-4457-871e-c34f71db97c9")
+		(effects
+			(font
+				(size 1.1684 1.1684)
+				(thickness 0.1016)
+			)
+			(justify right top)
+		)
+	)
+	(property "Value" "PH_S2B-PH"
+		(at -3 3.25 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "949fa2cd-9e60-4709-9b21-f86d8a2aa8b3")
+		(effects
+			(font
+				(size 1.1684 1.1684)
+				(thickness 0.1016)
+			)
+			(justify right top)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "7c231ece-644f-44a4-b4c5-484b61b3113b")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "72ae311f-adf9-4f0b-9af8-f02c5f07f203")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -3 -6.25)
+		(end -3 1.5)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b5dd3588-1d7a-436e-bffc-d9d08c028437")
+	)
+	(fp_line
+		(start -3 1.5)
+		(end 3 1.5)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b51b2aeb-f3be-4f57-b6b3-8b21f324a233")
+	)
+	(fp_line
+		(start 3 -6.25)
+		(end -3 -6.25)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "387d6f79-568a-4253-86d2-005c1fe3aa89")
+	)
+	(fp_line
+		(start 3 1.5)
+		(end 3 -6.25)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "3e02ee6e-d38d-4fd5-9c17-5c6424fec56d")
+	)
+	(pad "1" thru_hole circle
+		(at -1 0)
+		(size 1.208 1.208)
+		(drill 0.7)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "65527f37-c5c0-40b1-b06d-df9c41f46119")
+	)
+	(pad "2" thru_hole circle
+		(at 1 0)
+		(size 1.208 1.208)
+		(drill 0.7)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "754e34ba-4586-4617-9c35-31f2d5b8bf75")
+	)
+	(embedded_fonts no)
+)

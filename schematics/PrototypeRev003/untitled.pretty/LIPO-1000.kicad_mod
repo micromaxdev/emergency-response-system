@@ -1,0 +1,100 @@
+(footprint "LIPO-1000"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "1000mAh Lithium Polymer (LiPo) Battery Outline\n\nhttps://www.sparkfun.com/products/13813 Product Page\n\nDevices Using\n\n• LIPO-OUTLINE")
+	(property "Reference" "BT1"
+		(at 0.83464 -0.004043 90)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "a83b1e1d-aba3-4d65-8541-b3e2a5af470e")
+		(effects
+			(font
+				(size 0.512064 0.512064)
+				(thickness 0.097536)
+			)
+			(justify bottom)
+		)
+	)
+	(property "Value" "LIPO-OUTLINE1000"
+		(at 16.78 -50.586 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f917d6a2-fc8c-4bae-85c2-8c79a9cbf47d")
+		(effects
+			(font
+				(size 0.48768 0.48768)
+				(thickness 0.12192)
+			)
+			(justify top)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "7d289a6b-0afc-4238-9bc9-0b37bc5b3e7e")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5f73edc0-da70-44df-b604-27f8d481893b")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -16 -25)
+		(end -16 25)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "cedf2cdb-1e87-42ad-9631-61190a9e174f")
+	)
+	(fp_line
+		(start -16 25)
+		(end 16 25)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "b60836d9-fd05-481f-a6d1-b5676b8746e5")
+	)
+	(fp_line
+		(start 16 -25)
+		(end -16 -25)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "9f81b687-c311-44c8-8e5a-4b876d7ac4a8")
+	)
+	(fp_line
+		(start 16 25)
+		(end 16 -25)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "79c4e2de-0b0a-478a-9bb9-fef1280a0c8c")
+	)
+	(embedded_fonts no)
+)
